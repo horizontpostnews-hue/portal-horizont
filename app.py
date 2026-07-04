@@ -17,11 +17,11 @@ if GEMINI_API_KEY:
 if 'banco_noticias' not in st.session_state:
     st.session_state.banco_noticias = []
 
-# Novas fontes de alto volume e abertas
+# Fontes RSS variadas e com alto fluxo de atualização
 FONTES_RSS = {
-    "G1 Últimas (PT)": "https://g1.globo.com/rss/g1/",
-    "BBC World (EN)": "http://feeds.bbci.co.uk/news/world/rss.xml",
-    "El Mundo (ES)": "https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml",
+    "G1 Globo (PT)": "https://g1.globo.com/rss/g1/",
+    "BBC News World (EN)": "http://feeds.bbci.co.uk/news/world/rss.xml",
+    "El Mundo Portada (ES)": "https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml",
     "CNN International (EN)": "http://rss.cnn.com/rss/edition.rss"
 }
 
@@ -42,30 +42,35 @@ def pipeline_escrita_ia(titulo_original, link_original, fonte_nome):
     if not GEMINI_API_KEY:
         return None
     
-    # Forçando o Gemini a responder em formato estruturado limpo
-    model = genai.GenerativeModel('gemini-1.5-flash') # Modelo mais rápido e moderno
+    # Usando o modelo genérico atual 'gemini-pro' para estabilidade na conta gratuita
+    model = genai.GenerativeModel('gemini-pro')
     
     prompt = f"""
     Você é o redator-chefe do portal internacional horizont.news.
     Com base na notícia da fonte {fonte_nome}: "{titulo_original}".
     
     Gere uma versão proprietária (anti-plágio), com paráfrase radical em formato de pirâmide invertida jornalística.
-    Crie o texto original em português e faça traduções adaptadas para inglês e espanhol.
+    Crie o texto original em português e também traduções adaptadas para inglês e espanhol.
     
-    Responda RIGOROSAMENTE no formato JSON abaixo, sem texto antes ou depois:
+    Responda RIGOROSAMENTE no formato JSON abaixo, sem qualquer texto descritivo antes ou depois:
     {{
-        "titulo_pt": "Seu título inédito em português aqui",
-        "texto_pt": "Seu texto jornalístico em português aqui",
-        "titulo_en": "Seu título inédito em inglês aqui",
-        "texto_en": "Seu texto jornalístico em inglês aqui",
-        "titulo_es": "Seu título inédito em espanhol aqui",
-        "texto_es": "Seu texto jornalístico em espanhol aqui"
+        "titulo_pt": "Seu título inédito em português",
+        "texto_pt": "Seu texto jornalístico em português",
+        "titulo_en": "Seu título inédito em inglês",
+        "texto_en": "Seu texto jornalístico em inglês",
+        "titulo_es": "Seu título inédito em espanhol",
+        "texto_es": "Seu texto jornalístico em espanhol"
     }}
     """
     try:
         response = model.generate_content(prompt)
-        # Limpa possíveis blocos de código markdown que a IA coloque
-        texto_puro = response.text.replace("```json", "").replace("```", "").strip()
+        # Limpa possíveis blocos de formatação markdown que a IA coloque
+        texto_puro = response.text.strip()
+        if "```json" in texto_puro:
+            texto_puro = texto_puro.split("```json")[1].split("```")[0].strip()
+        elif "```" in texto_puro:
+            texto_puro = texto_puro.split("```")[1].split("```")[0].strip()
+            
         dados = json.loads(texto_puro)
         
         # Injeção Automática de Créditos e Links
@@ -75,7 +80,6 @@ def pipeline_escrita_ia(titulo_original, link_original, fonte_nome):
             
         return dados
     except Exception as e:
-        # Mostra o erro discretamente no console se falhar no processamento de formato
         return None
 
 # ==========================================
@@ -91,16 +95,20 @@ if st.button("🔄 Capturar e Processar Novas Notícias do Mundo"):
     else:
         com_sucesso = 0
         progresso = st.progress(0)
-        st.write("Varrendo agências de notícias mundiais...")
+        status_txt = st.empty()
         
         total_fontes = len(FONTES_RSS)
+        
+        # Limpa o banco da sessão para o teste forçar a captura das notícias atuais do feed
+        st.session_state.banco_noticias = []
+        
         for i, (nome_fonte, url_rss) in enumerate(FONTES_RSS.items()):
+            status_txt.write(f"Lendo notícias de: {nome_fonte}...")
             feed = feedparser.parse(url_rss)
-            # Pega as 3 notícias mais quentes do momento de cada fonte
-            for entrada in feed.entries[:3]:
-                # Evita ler o mesmo link na mesma sessão
-                if any(x['link_origem'] == entrada.link for x in st.session_state.banco_noticias):
-                    continue
+            
+            # Pega as 2 notícias mais recentes do topo do feed de cada fonte
+            for entrada in feed.entries[:2]:
+                status_txt.write(f"Processando no Gemini: {entrada.title[:50]}...")
                 
                 status, motivo = classificar_sensibilidade(entrada.title, entrada.get('description', ''))
                 dados_ia = pipeline_escrita_ia(entrada.title, entrada.link, nome_fonte)
@@ -117,13 +125,15 @@ if st.button("🔄 Capturar e Processar Novas Notícias do Mundo"):
                     }
                     st.session_state.banco_noticias.append(nova_noticia)
                     com_sucesso += 1
+            
             progresso.progress((i + 1) / total_fontes)
             
+        status_txt.empty()
         if com_sucesso > 0:
-            st.success(f"Processamento concluído! {com_sucesso} novas notícias triadas com sucesso pelo Gemini!")
+            st.success(f"Sucesso! {com_sucesso} novas notícias foram geradas, traduzidas e publicadas pelo Gemini!")
             st.rerun()
         else:
-            st.warning("O robô leu as fontes, mas não encontrou notícias inéditas neste segundo. Tente clicar novamente em instantes.")
+            st.error("O Gemini não conseguiu processar o formato das notícias nesta tentativa. Verifique se sua chave está correta e tente de novo.")
 
 # Abas do Painel Administrativo
 aba_publicadas, aba_retidas, aba_visualizacao_site = st.tabs([
