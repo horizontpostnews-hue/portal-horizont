@@ -17,7 +17,7 @@ if GEMINI_API_KEY:
 if 'banco_noticias' not in st.session_state:
     st.session_state.banco_noticias = []
 
-# Fontes RSS variadas e com alto fluxo de atualização
+# Fontes RSS variadas, abertas e de alto volume de atualização
 FONTES_RSS = {
     "G1 Globo (PT)": "https://g1.globo.com/rss/g1/",
     "BBC News World (EN)": "http://feeds.bbci.co.uk/news/world/rss.xml",
@@ -42,8 +42,8 @@ def pipeline_escrita_ia(titulo_original, link_original, fonte_nome):
     if not GEMINI_API_KEY:
         return None
     
-    # Usando o modelo genérico atual 'gemini-pro' para estabilidade na conta gratuita
-    model = genai.GenerativeModel('gemini-pro')
+    # Atualizado para o modelo moderno e otimizado de 2026
+    model = genai.GenerativeModel('gemini-1.5-flash')
     
     prompt = f"""
     Você é o redator-chefe do portal internacional horizont.news.
@@ -52,20 +52,21 @@ def pipeline_escrita_ia(titulo_original, link_original, fonte_nome):
     Gere uma versão proprietária (anti-plágio), com paráfrase radical em formato de pirâmide invertida jornalística.
     Crie o texto original em português e também traduções adaptadas para inglês e espanhol.
     
-    Responda RIGOROSAMENTE no formato JSON abaixo, sem qualquer texto descritivo antes ou depois:
+    Sua resposta deve ser EXCLUSIVAMENTE um objeto JSON válido, sem qualquer texto explicativo ou markdown fora dele. Use exatamente este formato:
     {{
-        "titulo_pt": "Seu título inédito em português",
-        "texto_pt": "Seu texto jornalístico em português",
-        "titulo_en": "Seu título inédito em inglês",
-        "texto_en": "Seu texto jornalístico em inglês",
-        "titulo_es": "Seu título inédito em espanhol",
-        "texto_es": "Seu texto jornalístico em espanhol"
+        "titulo_pt": "Título inédito em português",
+        "texto_pt": "Texto jornalístico detalhado em português",
+        "titulo_en": "Título inédito em inglês",
+        "texto_en": "Texto jornalístico detalhado em inglês",
+        "titulo_es": "Título inédito em espanhol",
+        "texto_es": "Texto jornalístico detalhado em espanhol"
     }}
     """
     try:
         response = model.generate_content(prompt)
-        # Limpa possíveis blocos de formatação markdown que a IA coloque
         texto_puro = response.text.strip()
+        
+        # Limpeza robusta contra marcações indesejadas da IA
         if "```json" in texto_puro:
             texto_puro = texto_puro.split("```json")[1].split("```")[0].strip()
         elif "```" in texto_puro:
@@ -99,16 +100,16 @@ if st.button("🔄 Capturar e Processar Novas Notícias do Mundo"):
         
         total_fontes = len(FONTES_RSS)
         
-        # Limpa o banco da sessão para o teste forçar a captura das notícias atuais do feed
+        # Força a limpeza da sessão para capturar as manchetes do exato minuto do clique
         st.session_state.banco_noticias = []
         
         for i, (nome_fonte, url_rss) in enumerate(FONTES_RSS.items()):
-            status_txt.write(f"Lendo notícias de: {nome_fonte}...")
+            status_txt.write(f"📖 Lendo o feed de notícias: **{nome_fonte}**...")
             feed = feedparser.parse(url_rss)
             
-            # Pega as 2 notícias mais recentes do topo do feed de cada fonte
+            # Limita a 2 notícias por fonte para garantir velocidade na cota gratuita
             for entrada in feed.entries[:2]:
-                status_txt.write(f"Processando no Gemini: {entrada.title[:50]}...")
+                status_txt.write(f"🤖 IA processando e traduzindo: *{entrada.title[:60]}...*")
                 
                 status, motivo = classificar_sensibilidade(entrada.title, entrada.get('description', ''))
                 dados_ia = pipeline_escrita_ia(entrada.title, entrada.link, nome_fonte)
@@ -130,12 +131,12 @@ if st.button("🔄 Capturar e Processar Novas Notícias do Mundo"):
             
         status_txt.empty()
         if com_sucesso > 0:
-            st.success(f"Sucesso! {com_sucesso} novas notícias foram geradas, traduzidas e publicadas pelo Gemini!")
+            st.success(f"Sucesso! {com_sucesso} notícias internacionais foram coletadas, traduzidas e publicadas!")
             st.rerun()
         else:
-            st.error("O Gemini não conseguiu processar o formato das notícias nesta tentativa. Verifique se sua chave está correta e tente de novo.")
+            st.error("Falha de comunicação com o servidor da IA. Verifique se copiou a chave corretamente e clique novamente.")
 
-# Abas do Painel Administrativo
+# Abas do Painel Administrativo de Homologação Humana
 aba_publicadas, aba_retidas, aba_visualizacao_site = st.tabs([
     "🟢 Feed de Monitoramento (Automáticas/Aprovadas)", 
     "🟠 Mesa de Edição (Retidas pelo Guardrail)", 
@@ -147,7 +148,7 @@ with aba_publicadas:
     st.subheader("Notícias Publicadas Automaticamente (Livres de Gatilhos)")
     noticias_ok = [n for n in st.session_state.banco_noticias if n['status'] == 'APROVADO']
     if not noticias_ok:
-        st.info("Nenhuma notícia automática publicada ainda.")
+        st.info("Nenhuma notícia automática publicada ainda nesta sessão.")
     else:
         df = pd.DataFrame(noticias_ok)[['id', 'data', 'fonte_origem', 'titulo_pt']]
         st.dataframe(df, use_container_width=True)
@@ -180,33 +181,4 @@ with aba_retidas:
                     st.session_state.banco_noticias[idx]['status'] = 'APROVADO'
                     st.rerun()
                     
-                if col3.button("❌ Descartar", key=f"d_{noti['id']}"):
-                    st.session_state.banco_noticias.remove(noti)
-                    st.rerun()
-
-# ---- ABA 3: VISUALIZAÇÃO DO SITE ----
-with aba_visualizacao_site:
-    st.markdown("<h2 style='text-align: center; color: #1e3a8a;'>horizont.news</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; font-style: italic;'>O cenário global em um clique</p>", unsafe_allow_html=True)
-    st.write("---")
-    
-    idioma_selecionado = st.radio("Idioma do Portal / Language", ["Português", "English", "Español"], horizontal=True)
-    lang_code = "pt" if idioma_selecionado == "Português" else "en" if idioma_selecionado == "English" else "es"
-
-    noticias_para_exibir = [n for n in st.session_state.banco_noticias if n['status'] == 'APROVADO']
-    
-    if not noticias_para_exibir:
-        st.info("Nenhuma notícia aprovada para exibição no feed público até o momento.")
-    else:
-        for n in reversed(noticias_para_exibir):
-            st.markdown(f"<h3 style='color: #1e3a8a;'>{n[f'titulo_{lang_code}']}</h3>", unsafe_allow_html=True)
-            st.caption(f"📅 Publicado em: {n['data']} | Fonte: {n['fonte_origem']}")
-            st.write(n[f'texto_{lang_code}'])
-            
-            col_audio, col_emoji = st.columns([1, 1])
-            with col_audio:
-                st.caption("🔊 Ouvir esta matéria (Acessibilidade ativada)")
-            with col_emoji:
-                st.write("Reações: 👍 | 🔥 | 💡 | 🧠")
-            
-            st.markdown("<hr style='border: 1px dashed #f97316;' />", unsafe_allow_html=True)
+                if col3.button("❌ Descartar", key=f"d_{noti
