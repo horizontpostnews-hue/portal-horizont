@@ -181,4 +181,33 @@ with aba_retidas:
                     st.session_state.banco_noticias[idx]['status'] = 'APROVADO'
                     st.rerun()
                     
-                if col3.button("❌ Descartar", key=f"d_{noti
+                if col3.button("❌ Descartar", key=f"d_{noti['id']}"):
+                    st.session_state.banco_noticias.remove(noti)
+                    st.rerun()
+
+# ---- ABA 3: VISUALIZAÇÃO DO SITE ----
+with aba_visualizacao_site:
+    st.markdown("<h2 style='text-align: center; color: #1e3a8a;'>horizont.news</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; font-style: italic;'>O cenário global em um clique</p>", unsafe_allow_html=True)
+    st.write("---")
+    
+    idioma_selecionado = st.radio("Idioma do Portal / Language", ["Português", "English", "Español"], horizontal=True)
+    lang_code = "pt" if idioma_selecionado == "Português" else "en" if idioma_selecionado == "English" else "es"
+
+    noticias_para_exibir = [n for n in st.session_state.banco_noticias if n['status'] == 'APROVADO']
+    
+    if not noticias_para_exibir:
+        st.info("Nenhuma notícia aprovada para exibição no feed público até o momento.")
+    else:
+        for n in reversed(noticias_para_exibir):
+            st.markdown(f"<h3 style='color: #1e3a8a;'>{n[f'titulo_{lang_code}']}</h3>", unsafe_allow_html=True)
+            st.caption(f"📅 Publicado em: {n['data']} | Fonte: {n['fonte_origem']}")
+            st.write(n[f'texto_{lang_code}'])
+            
+            col_audio, col_emoji = st.columns([1, 1])
+            with col_audio:
+                st.caption("🔊 Ouvir esta matéria (Acessibilidade ativada)")
+            with col_emoji:
+                st.write("Reações: 👍 | 🔥 | 💡 | 🧠")
+            
+            st.markdown("<hr style='border: 1px dashed #f97316;' />", unsafe_allow_html=True)
