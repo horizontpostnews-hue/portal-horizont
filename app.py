@@ -21,10 +21,10 @@ if 'banco_noticias' not in st.session_state:
 
 # Fontes Globais Gratuitas e Sem Paywall (RSS Open-Access)
 FONTES_RSS = {
-    "Reuters World": "https://news.google.com/rss/search?q=reuters+world&hl=en-US&gl=US&ceid=US:en",
-    "Deutsche Welle (EN)": "https://rss.dw.com/rdf/rss-en-all",
-    "El País (ES)": "https://elpais.com/rss/elpais/portada.xml",
-    "Agência Brasil (PT)": "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml"
+    "G1 Últimas (PT)": "https://g1.globo.com/rss/g1/",
+    "BBC World (EN)": "http://feeds.bbci.co.uk/news/world/rss.xml",
+    "El Mundo (ES)": "https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml",
+    "CNN International (EN)": "http://rss.cnn.com/rss/edition.rss"
 }
 
 # Terceirização das regras do Guardrail de Sensibilidade
