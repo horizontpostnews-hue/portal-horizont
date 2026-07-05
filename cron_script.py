@@ -7,7 +7,6 @@ from datetime import datetime
 # Configuração da API do Gemini
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-# Dicionário de fontes RSS de geopolítica e notícias internacionais
 FONTES_RSS = {
     "Al Jazeera (Oriente Médio)": "https://www.aljazeera.com/xml/rss/all.xml",
     "BBC News (Reino Unido)": "https://feeds.bbci.co.uk/news/world/rss.xml"
@@ -30,32 +29,35 @@ def salvar_banco(dados):
 
 def traduzir_e_resumir(titulo_org, texto_org):
     prompt = f"""
-    Você é um tradutor e jornalista sênior internacional. Receba a notícia em inglês e retorne STRICTLY um objeto JSON estruturado.
+    Você é um tradutor e jornalista. 
+    Traduza e resuma a notícia abaixo.
+    Título original: {titulo_org}
+    Texto original: {texto_org}
     
-    Notícia original:
-    Título: {titulo_org}
-    Texto: {texto_org}
-    
-    Retorne exatamente este modelo JSON (Não adicione markdown ou blocos de código ```json):
+    Retorne EXATAMENTE este formato JSON (sem crases de formatação Markdown):
     {{
-        "titulo_pt": "Tradução jornalística impecável do título para o Português",
-        "texto_pt": "Resumo analítico focado em geopolítica da notícia em Português com até 3 parágrafos",
+        "titulo_pt": "Título em português",
+        "texto_pt": "Resumo em português (2 parágrafos)",
         "titulo_en": "{titulo_org}",
-        "texto_en": "Um resumo curto de 2 linhas em inglês da notícia",
-        "titulo_es": "Tradução jornalística do título para o Espanhol",
-        "texto_es": "Resumo analítico focado em geopolítica da notícia em Espanhol"
+        "texto_en": "Resumo em inglês",
+        "titulo_es": "Título em espanhol",
+        "texto_es": "Resumo em espanhol"
     }}
     """
     try:
         model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(
-            prompt,
-            generation_config={"response_mime_type": "application/json"}
-        )
-        return json.loads(response.text.strip())
+        response = model.generate_content(prompt)
+        
+        # Limpeza pesada caso o Gemini retorne o JSON sujo com crases
+        texto_limpo = response.text.strip()
+        if texto_limpo.startswith("```json"):
+            texto_limpo = texto_limpo[7:-3].strip()
+        elif texto_limpo.startswith("```"):
+            texto_limpo = texto_limpo[3:-3].strip()
+            
+        return json.loads(texto_limpo)
     except Exception as e:
-        print(f"Erro na API Gemini: {e}")
-        # Retorna estrutura de segurança em português caso a API falhe, evitando dados nulos
+        print(f"Erro na IA: {e}")
         return {
             "titulo_pt": titulo_org,
             "texto_pt": texto_org,
@@ -73,21 +75,19 @@ def rodar_robo():
     cont_processadas = 0
     
     for nome_fonte, url_rss in FONTES_RSS.items():
-        if cont_processadas >= 4: # Limita a 4 notícias por rodada para evitar estouro de limite de tempo
+        if cont_processadas >= 4:
             break
             
         feed = feedparser.parse(url_rss)
         
-        for entry in feed.entries[:3]: # Analisa as 3 mais recentes de cada fonte
+        for entry in feed.entries[:3]:
             link = entry.link
             if link in links_existentes:
                 continue
                 
-            print(f"Processando nova matéria de: {nome_fonte}")
             titulo_original = entry.title
             texto_original = entry.get("summary", entry.get("description", ""))
             
-            # Chama a inteligência artificial para estruturar e traduzir os idiomas
             dados_traduzidos = traduzir_e_resumir(titulo_original, texto_original)
             
             item_noticia = {
@@ -108,9 +108,7 @@ def rodar_robo():
     if novas_noticias:
         banco_atual.extend(novas_noticias)
         salvar_banco(banco_atual)
-        print(f"Sucesso! {len(novas_noticias)} novas matérias traduzidas adicionadas.")
-    else:
-        print("Nenhuma notícia nova encontrada nas agências mundiais.")
+        print(f"Sucesso! {len(novas_noticias)} inseridas.")
 
 if __name__ == "__main__":
     rodar_robo()
