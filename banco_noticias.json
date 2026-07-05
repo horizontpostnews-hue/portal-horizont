@@ -1,1 +1,54 @@
-[]
+[
+    {
+        "id": 1,
+        "data": "05/07/2026 21:39",
+        "fonte_origem": "Al Jazeera (Oriente Médio)",
+        "link_origem": "https://www.aljazeera.com/news/2026/7/5/albanian-court-frees-protesters-who-rallied-against-kushner-linked-resort?traffic_source=rss",
+        "status": "APROVADO",
+        "titulo_pt": "Tribunal albanês liberta manifestantes que se manifestaram contra resort ligado a Kushner",
+        "texto_pt": "O planejado resort ligado ao genro do presidente dos EUA, Donald Trump, tornou-se um ponto crítico para protestos antigovernamentais.",
+        "titulo_en": "Albanian court frees protesters who rallied against Kushner-linked resort",
+        "texto_en": "The planned resort linked to US President Donald Trump&#039;s son-in-law has become a flashpoint for anti-government protests",
+        "titulo_es": "Un tribunal albanés libera a los manifestantes que se manifestaron contra un complejo turístico vinculado a Kushner",
+        "texto_es": "El complejo planeado vinculado al yerno del presidente estadounidense Donald Trump se ha convertido en un foco de protestas antigubernamentales."
+    },
+    {
+        "id": 2,
+        "data": "05/07/2026 21:39",
+        "fonte_origem": "Al Jazeera (Oriente Médio)",
+        "link_origem": "https://www.aljazeera.com/sports/liveblog/2026/7/5/mexico-vs-england-live-fifa-world-cup-2026-last-16?traffic_source=rss",
+        "status": "APROVADO",
+        "titulo_pt": "México x Inglaterra AO VIVO: Copa do Mundo FIFA 2026 – oitavas de final",
+        "texto_pt": "Cobertura ao vivo e atualizações de texto com preparação completa e notícias da equipe à frente de nosso fluxo de comentários do México x Inglaterra.",
+        "titulo_en": "Mexico vs England LIVE: FIFA World Cup 2026 – last 16",
+        "texto_en": "Live coverage and text updates with full build-up and team news ahead from our commentary stream of Mexico vs England.",
+        "titulo_es": "México vs Inglaterra EN VIVO: Copa Mundial de la FIFA 2026 – octavos de final",
+        "texto_es": "Cobertura en vivo y actualizaciones de texto con preparación completa y noticias del equipo desde nuestra transmisión de comentarios de México vs Inglaterra."
+    },
+    {
+        "id": 3,
+        "data": "05/07/2026 21:39",
+        "fonte_origem": "Al Jazeera (Oriente Médio)",
+        "link_origem": "https://www.aljazeera.com/sports/2026/7/5/world-cup-portugal-vs-spain-key-talking-points-ronaldo-yamal-prediction?traffic_source=rss",
+        "status": "APROVADO",
+        "titulo_pt": "Copa do Mundo FIFA: Tudo para saber como Portugal de Ronaldo enfrenta a Espanha nas oitavas de final",
+        "texto_pt": "Cristiano Ronaldo é apenas um dos vários pontos de discussão antes de Portugal e Espanha se enfrentarem num épico dos oitavos-de-final em Dallas.",
+        "titulo_en": "FIFA World Cup: All to know as Ronaldo’s Portugal play Spain in the last 16",
+        "texto_en": "Cristiano Ronaldo is just one of several key talking points before Portugal and Spain clash in a round of 16 epic in Dallas.",
+        "titulo_es": "Copa Mundial de la FIFA: todo está por saber mientras el Portugal de Ronaldo juega contra España en los octavos de final",
+        "texto_es": "Cristiano Ronaldo es sólo uno de los varios temas clave de conversación antes de que Portugal y España se enfrenten en una épica ronda de octavos de final en Dallas."
+    },
+    {
+        "id": 4,
+        "data": "05/07/2026 21:39",
+        "fonte_origem": "BBC News (Reino Unido)",
+        "link_origem": "https://www.bbc.co.uk/news/articles/cevllyj9vv3o?at_medium=RSS&at_campaign=rss",
+        "status": "APROVADO",
+        "titulo_pt": "Líder supremo do Irã ausente enquanto altos funcionários comparecem ao funeral do aiatolá",
+        "texto_pt": "Mojtaba Khamenei não é visto em público desde o ataque que matou o seu pai no início da guerra EUA-Israel com o Irão.",
+        "titulo_en": "Iran's supreme leader absent as senior officials attend ayatollah's funeral",
+        "texto_en": "Mojtaba Khamenei has not been seen in public since the attack which killed his father at the outset of the US-Israel war with Iran.",
+        "titulo_es": "El líder supremo de Irán está ausente mientras altos funcionarios asisten al funeral del ayatolá",
+        "texto_es": "Mojtaba Khamenei no ha sido visto en público desde el ataque que mató a su padre al comienzo de la guerra entre Estados Unidos e Israel contra Irán."
+    }
+]
