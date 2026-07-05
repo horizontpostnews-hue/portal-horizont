@@ -1,34 +1,21 @@
 import os
 import json
 import feedparser
+import google.generativeai as genai
 from datetime import datetime
-import re
 
-# Nova importação imune a conflitos de pacotes
-try:
-    import google.generativeai as genai
-    CHAVE_VALIDA = True
-except Exception:
-    CHAVE_VALIDA = False
+# Configuração da API do Gemini
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-API_KEY = os.getenv("GEMINI_API_KEY")
-if API_KEY and len(API_KEY.strip()) > 10 and CHAVE_VALIDA:
-    try:
-        genai.configure(api_key=API_KEY.strip())
-    except:
-        CHAVE_VALIDA = False
-else:
-    CHAVE_VALIDA = False
+# Dicionário de fontes RSS de geopolítica e notícias internacionais
+FONTES_RSS = {
+    "Al Jazeera (Oriente Médio)": "https://www.aljazeera.com/xml/rss/all.xml",
+    "BBC News (Reino Unido)": "https://feeds.bbci.co.uk/news/world/rss.xml"
+}
 
 ARQUIVO_BANCO = "banco_noticias.json"
 
-FONTES_RSS = {
-    "Al Jazeera (Oriente Médio)": "https://www.aljazeera.com/xml/rss/all.xml",
-    "NHK World (Japão)": "https://www3.nhk.or.jp/nhkworld/nhknewsline/rss/index.xml",
-    "BBC News (Reino Unido)": "http://feeds.bbci.co.uk/news/world/rss.xml"
-}
-
-def carregar_banco():
+def ler_banco():
     if os.path.exists(ARQUIVO_BANCO):
         try:
             with open(ARQUIVO_BANCO, "r", encoding="utf-8") as f:
@@ -41,99 +28,89 @@ def salvar_banco(dados):
     with open(ARQUIVO_BANCO, "w", encoding="utf-8") as f:
         json.dump(dados, f, ensure_ascii=False, indent=4)
 
-def limpar_html(texto_html):
-    if not texto_html:
-        return ""
-    return re.sub('<[^<]+?>', '', texto_html).strip()
-
-def motor_fallback(titulo, resumo_original, fonte_nome):
-    texto = limpar_html(resumo_original) if resumo_original else "Novos desdobramentos despachados pela central de correspondentes."
-    return {
-        "titulo_pt": f"[Direto] {titulo}",
-        "texto_pt": f"{texto}\n\n*Transmissão direta da agência {fonte_nome}.*",
-        "titulo_en": f"{titulo}",
-        "texto_en": f"{texto}\n\n*Direct wire transmission.*",
-        "titulo_es": f"{titulo}",
-        "texto_es": f"{texto}\n\n*Transmisión directa.*"
-    }
-
-def pipeline_gemini(titulo_original, resumo_original, link_original, fonte_nome):
-    if not CHAVE_VALIDA:
-        return motor_fallback(titulo_original, resumo_original, fonte_nome)
-        
+def traduzir_e_resumir(titulo_org, texto_org):
+    prompt = f"""
+    Você é um tradutor e jornalista sênior internacional. Receba a notícia em inglês e retorne STRICTLY um objeto JSON estruturado.
+    
+    Notícia original:
+    Título: {titulo_org}
+    Texto: {texto_org}
+    
+    Retorne exatamente este modelo JSON (Não adicione markdown ou blocos de código ```json):
+    {{
+        "titulo_pt": "Tradução jornalística impecável do título para o Português",
+        "texto_pt": "Resumo analítico focado em geopolítica da notícia em Português com até 3 parágrafos",
+        "titulo_en": "{titulo_org}",
+        "texto_en": "Um resumo curto de 2 linhas em inglês da notícia",
+        "titulo_es": "Tradução jornalística do título para o Espanhol",
+        "texto_es": "Resumo analítico focado em geopolítica da notícia em Espanhol"
+    }}
+    """
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        texto_base = limpar_html(resumo_original)
-        
-        prompt = f"""
-        Você é o redator do portal horizont.news. Com base no fato: "{texto_base}" da fonte {fonte_nome},
-        escreva uma matéria jornalística simples (2 parágrafos).
-        Retorne APENAS um JSON limpo, sem markdown adicionais:
-        {{
-            "titulo_pt": "{titulo_original}",
-            "texto_pt": "Texto em português",
-            "titulo_en": "{titulo_original}",
-            "texto_en": "Texto em inglês",
-            "titulo_es": "{titulo_original}",
-            "texto_es": "Texto em espanhol"
-        }}
-        """
-        response = model.generate_content(prompt)
-        texto_puro = response.text.strip()
-        
-        if "```json" in texto_puro:
-            texto_puro = texto_puro.split("```json")[1].split("```")[0].strip()
-        elif "```" in texto_puro:
-            texto_puro = texto_puro.split("```")[1].split("```")[0].strip()
-            
-        dados = json.loads(texto_puro)
-    except:
-        dados = motor_fallback(titulo_original, resumo_original, fonte_nome)
-        
-    for idioma in ['pt', 'en', 'es']:
-        dados[f'texto_{idioma}'] += f"\n\n* Fonte original: {fonte_nome} - [Acesse o link]({link_original}) *"
-    return dados
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(
+            prompt,
+            generation_config={"response_mime_type": "application/json"}
+        )
+        return json.loads(response.text.strip())
+    except Exception as e:
+        print(f"Erro na API Gemini: {e}")
+        # Retorna estrutura de segurança em português caso a API falhe, evitando dados nulos
+        return {
+            "titulo_pt": titulo_org,
+            "texto_pt": texto_org,
+            "titulo_en": titulo_org,
+            "texto_en": texto_org,
+            "titulo_es": titulo_org,
+            "texto_es": texto_org
+        }
 
-def executar_captura():
-    print("Iniciando varredura rápida global...")
-    banco_atual = carregar_banco()
-    links_existentes = {n.get('link_origem') for n in banco_atual if 'link_origem' in n}
-    novos_artigos = 0
+def rodar_robo():
+    banco_atual = ler_banco()
+    links_existentes = {item.get("link_origem") for item in banco_atual}
+    novas_noticias = []
+    
+    cont_processadas = 0
     
     for nome_fonte, url_rss in FONTES_RSS.items():
-        try:
-            feed = feedparser.parse(url_rss)
-            if not feed.entries:
-                continue
-                
-            entrada = feed.entries[0]
-            if entrada.link in links_existentes:
-                continue
-                
-            resumo_cru = entrada.get('summary', entrada.get('description', ''))
-            dados_ia = pipeline_gemini(entrada.title, resumo_cru, entrada.link, nome_fonte)
+        if cont_processadas >= 4: # Limita a 4 notícias por rodada para evitar estouro de limite de tempo
+            break
             
-            if dados_ia:
-                nova_noticia = {
-                    "id": len(banco_atual) + 1,
-                    "data": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                    "fonte_origem": nome_fonte,
-                    "link_origem": entrada.link,
-                    "status": "APROVADO",
-                    "motivo_retencao": "Seguro",
-                    **dados_ia
-                }
-                banco_atual.append(nova_noticia)
-                novos_artigos += 1
+        feed = feedparser.parse(url_rss)
+        
+        for entry in feed.entries[:3]: # Analisa as 3 mais recentes de cada fonte
+            link = entry.link
+            if link in links_existentes:
+                continue
                 
-        except Exception as e:
-            print(f"Erro na fonte {nome_fonte}: {e}")
+            print(f"Processando nova matéria de: {nome_fonte}")
+            titulo_original = entry.title
+            texto_original = entry.get("summary", entry.get("description", ""))
+            
+            # Chama a inteligência artificial para estruturar e traduzir os idiomas
+            dados_traduzidos = traduzir_e_resumir(titulo_original, texto_original)
+            
+            item_noticia = {
+                "id": len(banco_atual) + len(novas_noticias) + 1,
+                "data": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                "fonte_origem": nome_fonte,
+                "link_origem": link,
+                "status": "APROVADO",
+                "motivo_retencao": "Seguro",
+                **dados_traduzidos
+            }
+            
+            novas_noticias.append(item_noticia)
+            cont_processadas += 1
+            if cont_processadas >= 4:
+                break
                 
-    if novos_artigos > 0:
+    if novas_noticias:
+        banco_atual.extend(novas_noticias)
         salvar_banco(banco_atual)
-        print(f"Sucesso! {novos_artigos} novas notícias inseridas.")
+        print(f"Sucesso! {len(novas_noticias)} novas matérias traduzidas adicionadas.")
     else:
-        print("Nenhuma novidade encontrada nesta rodada.")
+        print("Nenhuma notícia nova encontrada nas agências mundiais.")
 
 if __name__ == "__main__":
-    executar_captura()
+    rodar_robo()
