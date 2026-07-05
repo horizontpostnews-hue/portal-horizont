@@ -8,13 +8,11 @@ st.set_page_config(
     layout="wide"
 )
 
-# ⚠️ APAGUE O LINK ABAIXO E COLE O LINK "RAW" QUE VOCÊ COPIOU DO SEU GITHUB:
+# Link direto para o banco de dados sem passar por cache de disco do servidor
 URL_BANCO_RAW = "https://raw.githubusercontent.com/horizontpostnews-hue/portal-horizont/refs/heads/main/banco_noticias.json"
 
 def ler_banco_dados_fresco():
-    try: st.markdown("<style>#MainMenu {visibility: hidden;} [data-testid='stSidebar'] {display: none;}</style>", unsafe_allow_html=True)
-
-        # Puxa o arquivo direto da internet sem passar pelo cache do servidor
+    try:
         req = urllib.request.Request(
             URL_BANCO_RAW, 
             headers={'User-Agent': 'Mozilla/5.0', 'Cache-Control': 'no-cache'}
@@ -22,10 +20,9 @@ def ler_banco_dados_fresco():
         with urllib.request.urlopen(req) as response:
             return json.loads(response.read().decode('utf-8'))
     except Exception as e:
-        st.sidebar.error(f"Erro de conexão com o banco: {e}")
         return []
 
-def obter_tag_categoria(titulo, texto):
+def obtener_tag_categoria(titulo, texto):
     conteudo = f"{titulo} {texto}".lower()
     if any(w in conteudo for w in ["banco", "tax", "gold", "ouro", "trade", "mercado", "comércio", "celebrate"]):
         return "💰 ECONOMIA / CULTURA"
@@ -35,8 +32,13 @@ def obter_tag_categoria(titulo, texto):
         return "🚨 URGENTE / ALERTA"
     return "📌 INTERNACIONAL"
 
+# Esconde o menu lateral de páginas do Streamlit para o leitor comum
+st.markdown(
+    "<style>#MainMenu {visibility: hidden;} [data-testid='stSidebar'] {display: none;}</style>", 
+    unsafe_allow_html=True
+)
+
 # Cabeçalho do Leitor
-# Cabeçalho do Leitor Corrigido
 st.markdown(
     """
     <div style="background-color:#0f172a; padding:25px; border-radius:12px; margin-bottom:25px; text-align:center; border: 1px solid #1e293b;">
@@ -44,7 +46,7 @@ st.markdown(
         <p style="color:#38bdf8; font-size:15px; margin:5px 0 0 0; font-weight:500;">Feed Internacional Geopolítico em Tempo Real</p>
     </div>
     """, 
-    unsafe_allow_html=True  # <-- CORRIGIDO AQUI
+    unsafe_allow_html=True
 )
 
 idioma = st.selectbox("🌎 Idioma / Language / Idioma", ["Português", "English", "Español"])
@@ -57,7 +59,7 @@ if not noticias:
 else:
     noticias_recentes = list(reversed(noticias))
     
-    # Grid de 2 colunas para o Leitor
+    # Grade em 2 colunas paralela
     for i in range(0, len(noticias_recentes), 2):
         cols = st.columns(2)
         for idx, col in enumerate(cols):
@@ -65,7 +67,7 @@ else:
                 item = noticias_recentes[i + idx]
                 titulo = item.get(f"titulo_{sufixo}", item.get("titulo_pt", "Sem Título"))
                 texto = item.get(f"texto_{sufixo}", item.get("texto_pt", "Sem Conteúdo"))
-                tag = obter_tag_categoria(titulo, texto)
+                tag = obtener_tag_categoria(titulo, texto)
                 
                 with col:
                     with st.container(border=True):
