@@ -1,32 +1,32 @@
 import os
 import json
 import feedparser
-import google.generativeai as genai
 from datetime import datetime
 import re
-import sys
 
-# Configuração da API do Gemini
+# Nova importação imune a conflitos de pacotes
+try:
+    import google.generativeai as genai
+    CHAVE_VALIDA = True
+except Exception:
+    CHAVE_VALIDA = False
+
 API_KEY = os.getenv("GEMINI_API_KEY")
-CHAVE_VALIDA = False
-
-if API_KEY and len(API_KEY.strip()) > 10:
+if API_KEY and len(API_KEY.strip()) > 10 and CHAVE_VALIDA:
     try:
         genai.configure(api_key=API_KEY.strip())
-        CHAVE_VALIDA = True
-    except Exception as e:
-        print(f"Aviso ao configurar IA: {e}")
+    except:
+        CHAVE_VALIDA = False
+else:
+    CHAVE_VALIDA = False
 
 ARQUIVO_BANCO = "banco_noticias.json"
 
-# Reduzimos o mapa de fontes para evitar loops infinitos ou bloqueios de IP
 FONTES_RSS = {
     "Al Jazeera (Oriente Médio)": "https://www.aljazeera.com/xml/rss/all.xml",
     "NHK World (Japão)": "https://www3.nhk.or.jp/nhkworld/nhknewsline/rss/index.xml",
     "BBC News (Reino Unido)": "http://feeds.bbci.co.uk/news/world/rss.xml"
 }
-
-TERMOS_SENSIVEIS = ['tragédia', 'crime', 'violência', 'morreu', 'assassinato', 'míssil', 'atentado', 'suicídio', 'mortes']
 
 def carregar_banco():
     if os.path.exists(ARQUIVO_BANCO):
@@ -70,11 +70,11 @@ def pipeline_gemini(titulo_original, resumo_original, link_original, fonte_nome)
         escreva uma matéria jornalística simples (2 parágrafos).
         Retorne APENAS um JSON limpo, sem markdown adicionais:
         {{
-            "titulo_pt": "{titulo_original} em português",
+            "titulo_pt": "{titulo_original}",
             "texto_pt": "Texto em português",
-            "titulo_en": "{titulo_original} em inglês",
+            "titulo_en": "{titulo_original}",
             "texto_en": "Texto em inglês",
-            "titulo_es": "{titulo_original} em espanhol",
+            "titulo_es": "{titulo_original}",
             "texto_es": "Texto em espanhol"
         }}
         """
@@ -106,7 +106,6 @@ def executar_captura():
             if not feed.entries:
                 continue
                 
-            # Analisa apenas a primeira notícia mais recente do feed
             entrada = feed.entries[0]
             if entrada.link in links_existentes:
                 continue
