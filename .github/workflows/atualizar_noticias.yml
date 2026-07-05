@@ -5,6 +5,10 @@ on:
     - cron: '0 * * * *'
   workflow_dispatch:
 
+# GARANTE QUE O ROBÔ PODE ESCREVER ARQUIVOS NO REPOSITÓRIO
+permissions:
+  contents: write
+
 jobs:
   rodar-script:
     runs-on: ubuntu-latest
@@ -30,6 +34,12 @@ jobs:
         run: |
           git config --global user.name "Robo Horizont"
           git config --global user.email "actions@github.com"
+          
+          # Garante que o arquivo exista para não dar erro no commit
+          touch banco_noticias.json
+          
           git add banco_noticias.json || true
           git commit -m "database: atualizacao automatica de noticias globais [skip ci]" || true
-          git push origin main || true
+          
+          # Força o push usando o token de escrita nativo
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main || true
