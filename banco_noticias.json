@@ -1,0 +1,30 @@
+[
+    {
+        "id": 1,
+        "data": "05/07/2026 07:31",
+        "fonte_origem": "Al Jazeera (Oriente Médio)",
+        "link_origem": "https://www.aljazeera.com/sports/2026/7/5/brazil-vs-norway-fifa-world-cup-last-16-vinicius-haaland-and-prediction?traffic_source=rss",
+        "status": "APROVADO",
+        "motivo_retencao": "Seguro",
+        "titulo_pt": "[Direto] Brazil vs Norway: FIFA World Cup last 16 – Vinicius, Haaland and prediction",
+        "texto_pt": "Norway are one of only three countries Brazil have faced at a World Cup without registering at least one victory.\n\n*Transmissão direta da agência Al Jazeera (Oriente Médio).*\n\n* Fonte original: Al Jazeera (Oriente Médio) - [Acesse o link](https://www.aljazeera.com/sports/2026/7/5/brazil-vs-norway-fifa-world-cup-last-16-vinicius-haaland-and-prediction?traffic_source=rss) *",
+        "titulo_en": "Brazil vs Norway: FIFA World Cup last 16 – Vinicius, Haaland and prediction",
+        "texto_en": "Norway are one of only three countries Brazil have faced at a World Cup without registering at least one victory.\n\n*Direct wire transmission.*\n\n* Fonte original: Al Jazeera (Oriente Médio) - [Acesse o link](https://www.aljazeera.com/sports/2026/7/5/brazil-vs-norway-fifa-world-cup-last-16-vinicius-haaland-and-prediction?traffic_source=rss) *",
+        "titulo_es": "Brazil vs Norway: FIFA World Cup last 16 – Vinicius, Haaland and prediction",
+        "texto_es": "Norway are one of only three countries Brazil have faced at a World Cup without registering at least one victory.\n\n*Transmisión directa.*\n\n* Fonte original: Al Jazeera (Oriente Médio) - [Acesse o link](https://www.aljazeera.com/sports/2026/7/5/brazil-vs-norway-fifa-world-cup-last-16-vinicius-haaland-and-prediction?traffic_source=rss) *"
+    },
+    {
+        "id": 2,
+        "data": "05/07/2026 07:31",
+        "fonte_origem": "BBC News (Reino Unido)",
+        "link_origem": "https://www.bbc.co.uk/news/articles/cp9lppvkmz5o?at_medium=RSS&at_campaign=rss",
+        "status": "APROVADO",
+        "motivo_retencao": "Seguro",
+        "titulo_pt": "[Direto] US marks its 250th birthday with fireworks, flyovers and extreme weather",
+        "texto_pt": "US President Donald Trump's speech included some of his political agenda but also honoured war veterans and American history.\n\n*Transmissão direta da agência BBC News (Reino Unido).*\n\n* Fonte original: BBC News (Reino Unido) - [Acesse o link](https://www.bbc.co.uk/news/articles/cp9lppvkmz5o?at_medium=RSS&at_campaign=rss) *",
+        "titulo_en": "US marks its 250th birthday with fireworks, flyovers and extreme weather",
+        "texto_en": "US President Donald Trump's speech included some of his political agenda but also honoured war veterans and American history.\n\n*Direct wire transmission.*\n\n* Fonte original: BBC News (Reino Unido) - [Acesse o link](https://www.bbc.co.uk/news/articles/cp9lppvkmz5o?at_medium=RSS&at_campaign=rss) *",
+        "titulo_es": "US marks its 250th birthday with fireworks, flyovers and extreme weather",
+        "texto_es": "US President Donald Trump's speech included some of his political agenda but also honoured war veterans and American history.\n\n*Transmisión directa.*\n\n* Fonte original: BBC News (Reino Unido) - [Acesse o link](https://www.bbc.co.uk/news/articles/cp9lppvkmz5o?at_medium=RSS&at_campaign=rss) *"
+    }
+]
