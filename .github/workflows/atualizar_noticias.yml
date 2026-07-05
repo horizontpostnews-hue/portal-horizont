@@ -22,7 +22,8 @@ jobs:
 
       - name: Instalar ferramentas necessarias
         run: |
-          pip install feedparser google-generativeai
+  python -m pip install --upgrade pip
+  pip install feedparser google-generativeaipipgoogle-generativeai
 
       - name: Executar Robo
         env:
