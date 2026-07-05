@@ -12,7 +12,8 @@ st.set_page_config(
 URL_BANCO_RAW = "https://raw.githubusercontent.com/horizontpostnews-hue/portal-horizont/refs/heads/main/banco_noticias.json"
 
 def ler_banco_dados_fresco():
-    try:
+    try: st.markdown("<style>#MainMenu {visibility: hidden;} [data-testid='stSidebar'] {display: none;}</style>", unsafe_allow_html=True)
+
         # Puxa o arquivo direto da internet sem passar pelo cache do servidor
         req = urllib.request.Request(
             URL_BANCO_RAW, 
