@@ -29,42 +29,42 @@ def salvar_banco(dados):
 
 def traduzir_e_resumir(titulo_org, texto_org):
     prompt = f"""
-    Você é um tradutor e jornalista. 
-    Traduza e resuma a notícia abaixo.
-    Título original: {titulo_org}
-    Texto original: {texto_org}
+    Você é um tradutor e jornalista sênior internacional. Receba a notícia em inglês e faça a tradução e o resumo para os idiomas solicitados.
     
-    Retorne EXATAMENTE este formato JSON (sem crases de formatação Markdown):
+    Notícia original:
+    Título: {titulo_org}
+    Texto: {texto_org}
+    
+    Você DEVE retornar OBRIGATORIAMENTE um objeto JSON válido contendo exatamente estas chaves:
     {{
-        "titulo_pt": "Título em português",
-        "texto_pt": "Resumo em português (2 parágrafos)",
+        "titulo_pt": "Tradução impecável do título para o Português do Brasil",
+        "texto_pt": "Resumo jornalístico focado em geopolítica em Português do Brasil (com 1 ou 2 parágrafos)",
         "titulo_en": "{titulo_org}",
-        "texto_en": "Resumo em inglês",
-        "titulo_es": "Título em espanhol",
-        "texto_es": "Resumo em espanhol"
+        "texto_en": "Um resumo curto de 2 linhas em inglês",
+        "titulo_es": "Tradução profissional do título para o Espanhol",
+        "texto_es": "Resumo jornalístico focado em geopolítica em Espanhol"
     }}
+    
+    Atenção: Garanta que o texto não contenha aspas duplas soltas que possam quebrar a estrutura do JSON.
     """
     try:
         model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(prompt)
-        
-        # Limpeza pesada caso o Gemini retorne o JSON sujo com crases
-        texto_limpo = response.text.strip()
-        if texto_limpo.startswith("```json"):
-            texto_limpo = texto_limpo[7:-3].strip()
-        elif texto_limpo.startswith("```"):
-            texto_limpo = texto_limpo[3:-3].strip()
-            
-        return json.loads(texto_limpo)
+        # Ativa o modo de resposta JSON nativo do Gemini para evitar falhas de leitura
+        response = model.generate_content(
+            prompt,
+            generation_config={"response_mime_type": "application/json"}
+        )
+        return json.loads(response.text.strip())
     except Exception as e:
-        print(f"Erro na IA: {e}")
+        print(f"🔴 ERRO NA CHAMADA DA IA: {e}")
+        # Texto de alerta amigável caso a API falhe por falta de saldo/chave incorreta
         return {
-            "titulo_pt": titulo_org,
-            "texto_pt": texto_org,
+            "titulo_pt": f"⚠️ [Tradução Pendente] {titulo_org}",
+            "texto_pt": f"O robô coletou esta matéria, mas a Inteligência Artificial encontrou uma instabilidade temporária para traduzi-la. Texto original: {texto_org}",
             "titulo_en": titulo_org,
             "texto_en": texto_org,
-            "titulo_es": titulo_org,
-            "texto_es": texto_org
+            "titulo_es": f"⚠️ [Traducción Pendiente] {titulo_org}",
+            "texto_es": f"El robot recopiló este artículo, mas la IA encontrou una inestabilidad temporal. Texto original: {texto_org}"
         }
 
 def rodar_robo():
@@ -85,6 +85,7 @@ def rodar_robo():
             if link in links_existentes:
                 continue
                 
+            print(f"Processando nova matéria de: {nome_fonte}")
             titulo_original = entry.title
             texto_original = entry.get("summary", entry.get("description", ""))
             
@@ -108,7 +109,9 @@ def rodar_robo():
     if novas_noticias:
         banco_atual.extend(novas_noticias)
         salvar_banco(banco_atual)
-        print(f"Sucesso! {len(novas_noticias)} inseridas.")
+        print(f"Sucesso! {len(novas_noticias)} novas matérias processadas.")
+    else:
+        print("Nenhuma notícia nova encontrada nas agências mundiais.")
 
 if __name__ == "__main__":
-    rodar_robo()
+    run_status = rodar_robo()
