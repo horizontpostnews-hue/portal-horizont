@@ -10,12 +10,17 @@ import re
 # ==========================================
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-if API_KEY:
-    genai.configure(api_key=API_KEY)
+# Validação inicial da chave para evitar falhas críticas de Bad Request (400)
+CHAVE_VALIDA = False
+if API_KEY and len(API_KEY.strip()) > 10:
+    try:
+        genai.configure(api_key=API_KEY.strip())
+        CHAVE_VALIDA = True
+    except:
+        CHAVE_VALIDA = False
 
 ARQUIVO_BANCO = "banco_noticias.json"
 
-# ECOSSISTEMA GEOPOLÍTICO EXPANDIDO (Idêntico ao app.py)
 FONTES_RSS = {
     "Al Jazeera (Ásia Ocidental / Oriente Médio)": "https://www.aljazeera.com/xml/rss/all.xml",
     "TASS Agency (Europa Oriental / Rússia)": "https://tass.com/rss/v2.xml",
@@ -66,15 +71,15 @@ def motor_fallback_real(titulo, resumo_original, fonte_nome):
 
     return {
         "titulo_pt": f"{titulo}",
-        "texto_pt": f"{texto_extraido}\n\n*Nota: Transmissão direta da agência parceira.*",
+        "texto_pt": f"{texto_extraido}\n\n*Nota: Transmissão direta da agência parceira por indisponibilidade de IA.*",
         "titulo_en": f"Global News: {titulo}",
-        "texto_en": f"{texto_extraido}\n\n*Note: Direct agency wire transmission.*",
+        "texto_en": f"{texto_extraido}\n\n*Note: Direct agency wire transmission due to IA fallback.*",
         "titulo_es": f"Reporte: {titulo}",
         "texto_es": f"{texto_extraido}\n\n*Nota: Transmisión directa desde la agencia de origen.*"
     }
 
 def pipeline_gemini(titulo_original, resumo_original, link_original, fonte_nome):
-    if not API_KEY:
+    if not CHAVE_VALIDA:
         return motor_fallback_real(titulo_original, resumo_original, fonte_nome)
         
     try:
@@ -84,14 +89,13 @@ def pipeline_gemini(titulo_original, resumo_original, link_original, fonte_nome)
         prompt = f"""
         Você é o redator-chefe do portal internacional horizont.news.
         Com base no título "{titulo_original}" e no fato coletado: "{texto_base}" da fonte {fonte_nome}.
-        
-        Escreva uma matéria jornalística aprofundada e proprietária (mínimo 3 parágrafos) expandindo o contexto.
+        Escreva uma matéria jornalística aprofundada (mínimo 3 parágrafos).
         Gere três versões completas e traduzidas: português, inglês e espanhol.
         
-        Retorne RIGOROSAMENTE apenas um JSON limpo e válido:
+        Retorne RIGOROSAMENTE apenas um JSON limpo:
         {{
-            "titulo_pt": "Manchete forte em português",
-            "texto_pt": "Corpo da notícia completo e profissional em português",
+            "titulo_pt": "Manchete em português",
+            "texto_pt": "Corpo da notícia em português",
             "titulo_en": "Manchete em inglês",
             "texto_en": "Corpo da notícia em inglês",
             "titulo_es": "Manchete em espanhol",
@@ -110,52 +114,52 @@ def pipeline_gemini(titulo_original, resumo_original, link_original, fonte_nome)
     except Exception:
         dados = motor_fallback_real(titulo_original, resumo_original, fonte_nome)
         
-    credito = f"\n\n*Este artigo foi estruturado de forma independente pela redação horizont.news, com dados analíticos de {fonte_nome}. [Leia o despacho original no veículo de origem]({link_original}).*"
+    credito = f"\n\n*Este artigo foi estruturado pela redação horizont.news, com dados analíticos de {fonte_nome}. [Leia o despacho original]({link_original}).*"
     for idioma in ['pt', 'en', 'es']:
         dados[f'texto_{idioma}'] += credito
     return dados
 
 # ==========================================
-# 3. EXECUÇÃO DO ROBÔ DE SEGUNDO PLANO
+# 3. EXECUÇÃO DA ROTINA
 # ==========================================
 def executar_captura():
-    print("Iniciando rotina automática de atualização geopolítica...")
+    print("Iniciando rotina geopolítica global...")
     banco_atual = carregar_banco()
     links_existentes = {n['link_origem'] for n in banco_atual}
     novos_artigos = 0
     
     for nome_fonte, url_rss in FONTES_RSS.items():
-        print(f"Varrendo satélite: {nome_fonte}")
-        feed = feedparser.parse(url_rss)
-        
-        for entrada in feed.entries[:1]: # Pega a principal de cada região
-            if entrada.link in links_existentes:
-                continue
+        try:
+            feed = feedparser.parse(url_rss)
+            for entrada in feed.entries[:1]:
+                if entrada.link in links_existentes:
+                    continue
+                    
+                resumo_cru = entrada.get('summary', entrada.get('description', ''))
+                status, motivo = classificar_sensibilidade(entrada.title, resumo_cru)
+                dados_ia = pipeline_gemini(entrada.title, resumo_cru, entrada.link, nome_fonte)
                 
-            print(f"New wire detected: {entrada.title}")
-            resumo_cru = entrada.get('summary', entrada.get('description', ''))
-            status, motivo = classificar_sensibilidade(entrada.title, resumo_cru)
-            
-            dados_ia = pipeline_gemini(entrada.title, resumo_cru, entrada.link, nome_fonte)
-            if dados_ia:
-                nova_noticia = {
-                    "id": len(banco_atual) + 1,
-                    "data": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                    "fonte_origem": nome_fonte,
-                    "link_origem": entrada.link,
-                    "status": status,
-                    "motivo_retencao": motivo,
-                    **dados_ia
-                }
-                banco_atual.append(nova_noticia)
-                links_existentes.add(entrada.link)
-                novos_artigos += 1
+                if dados_ia:
+                    nova_noticia = {
+                        "id": len(banco_atual) + 1,
+                        "data": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                        "fonte_origem": nome_fonte,
+                        "link_origem": entrada.link,
+                        "status": status,
+                        "motivo_retencao": motivo,
+                        **dados_ia
+                    }
+                    banco_atual.append(nova_noticia)
+                    links_existentes.add(entrada.link)
+                    novos_artigos += 1
+        except Exception as e:
+            print(f"Erro ao ler a fonte {nome_fonte}: {e}")
                 
     if novos_artigos > 0:
         salvar_banco(banco_atual)
-        print(f"Sucesso! {novos_artigos} novos artigos globais integrados ao banco de dados permanentemente.")
+        print(f"Sucesso! {novos_artigos} artigos integrados permanentemente.")
     else:
-        print("Nenhum fato inédito encontrado nas agências internacionais nesta rodada.")
+        print("Nenhum fato inédito encontrado nesta rodada.")
 
 if __name__ == "__main__":
     executar_captura()
