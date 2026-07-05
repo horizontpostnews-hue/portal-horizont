@@ -5,9 +5,10 @@ import pandas as pd
 from datetime import datetime
 import json
 import os
+import re
 
 # ==========================================
-# 1. CONFIGURAÇÕES INICIAIS E MAPA MUNDIAL DE FONTES
+# 1. CONFIGURAÇÕES E NOVO MAPA MUNDIAL DE FONTES
 # ==========================================
 st.set_page_config(page_title="horizont.news - Painel Editorial", layout="wide")
 
@@ -33,14 +34,14 @@ def salvar_dados_permanentes(dados):
 if 'banco_noticias' not in st.session_state:
     st.session_state.banco_noticias = carregar_dados_permanentes()
 
-# Novo ecossistema expandido com diversidade geopolítica e cultural
+# MAPA MUNDIAL EXPANDIDO: Quebrando a bolha ocidental
 FONTES_RSS = {
-    "Al Jazeera (Oriente Médio)": "https://www.aljazeera.com/xml/rss/all.xml",
+    "Al Jazeera (Ásia Ocidental / Oriente Médio)": "https://www.aljazeera.com/xml/rss/all.xml",
+    "TASS Agency (Europa Oriental / Rússia)": "https://tass.com/rss/v2.xml",
     "NHK World (Japão)": "https://www3.nhk.or.jp/nhkworld/nhknewsline/rss/index.xml",
     "Xinhua Net (China)": "https://www.xinhuanet.com/english/rss/worldrss.xml",
-    "RT News (Europa Oriental)": "https://www.rt.com/rss/news/",
-    "El Universal (México)": "https://www.eluniversal.com.mx/world/rss.xml",
     "Clarín (Argentina)": "https://www.clarin.com/rss/mundo/",
+    "El Universal (México)": "https://www.eluniversal.com.mx/rss/universal/mundo.xml",
     "CBC News (Canadá)": "https://rss.cbc.ca/lineup/world.xml",
     "G1 Globo (Brasil)": "https://g1.globo.com/rss/g1/",
     "BBC News (Reino Unido)": "http://feeds.bbci.co.uk/news/world/rss.xml"
@@ -49,7 +50,7 @@ FONTES_RSS = {
 TERMOS_SENSIVEIS = ['tragédia', 'crime', 'violência', 'morreu', 'assassinato', 'guerra', 'míssil', 'atentado', 'suicídio', 'mortes', 'acidente']
 
 # ==========================================
-# 2. MOTOR DE IA E GERAÇÃO RESTRUTURADA DE CONTEÚDO
+# 2. INTELIGÊNCIA EDITORIAL E EXTRAÇÃO DE CONTEÚDO REAL
 # ==========================================
 
 def classificar_sensibilidade(titulo, texto):
@@ -59,38 +60,53 @@ def classificar_sensibilidade(titulo, texto):
             return "RETIDO", f"Contém termo sensível: '{termo}'"
     return "APROVADO", "Seguro para publicação automática"
 
-def motor_traducao_local(titulo, fonte_nome):
-    """Gera um artigo legível e limpo para o público caso a API fique offline"""
+def limpar_html(texto_html):
+    """Remove tags HTML comuns que vêm nos feeds RSS para deixar o texto limpo"""
+    if not texto_html:
+        return ""
+    texto_limpo = re.sub('<[^<]+?>', '', texto_html)
+    return texto_limpo.strip()
+
+def motor_fallback_real(titulo, resumo_original, fonte_nome):
+    """Se a IA estiver sem chave, extrai o conteúdo REAL do RSS em vez de texto fictício"""
+    texto_extraido = limpar_html(resumo_original)
+    
+    if not texto_extraido or len(texto_extraido) < 15:
+        texto_extraido = f"Novos desdobramentos importantes foram despachados diretamente pela central de correspondentes da agência {fonte_nome}."
+
     return {
         "titulo_pt": f"{titulo}",
-        "texto_pt": f"A agência de notícias {fonte_nome} enviou um despacho urgente informando novos desdobramentos sobre este caso na última hora. O bloco de correspondentes internacionais acompanha os impactos comerciais e políticos na região geográfica do ocorrido.",
-        "titulo_en": f"Global Report: {titulo}",
-        "texto_en": f"International agency {fonte_nome} dispatched urgent updates regarding this development. Global analysts are evaluating the immediate political and economic impacts across the affected territory.",
+        "texto_pt": f"{texto_extraido}\n\n*Nota: Transmissão direta da agência parceira.*",
+        "titulo_en": f"Global News: {titulo}",
+        "texto_en": f"{texto_extraido}\n\n*Note: Direct agency wire transmission.*",
         "titulo_es": f"Reporte: {titulo}",
-        "texto_es": f"La agencia de noticias {fonte_nome} emitió un despacho de última hora sobre este caso. Corresponsales internacionales analizan las implicaciones políticas y comerciales en la región."
+        "texto_es": f"{texto_extraido}\n\n*Nota: Transmisión directa desde la agencia de origen.*"
     }
 
-def pipeline_escrita_ia(titulo_original, link_original, fonte_nome):
+def pipeline_escrita_ia(titulo_original, resumo_original, link_original, fonte_nome):
+    # Se não houver chave de API informada, usa o conteúdo real vindo do jornal de origem
     if not GEMINI_API_KEY:
-        return motor_traducao_local(titulo_original, fonte_nome)
+        return motor_fallback_real(titulo_original, resumo_original, fonte_nome)
     
     try:
         model = genai.GenerativeModel('gemini-1.5-flash')
-        prompt = f"""
-        Você é o redator-chefe do portal multilíngue horizont.news.
-        Com base no fato coletado da fonte {fonte_nome}: "{titulo_original}".
+        texto_base = limpar_html(resumo_original)
         
-        Escreva uma matéria jornalística proprietária, sem copiar a fonte.
-        Gere três versões completas: uma em português, uma em inglês e uma em espanhol.
+        prompt = f"""
+        Você é o redator-chefe do portal internacional horizont.news.
+        Com base no título "{titulo_original}" e no fato coletado: "{texto_base}" da fonte {fonte_nome}.
+        
+        Escreva uma matéria jornalística aprofundada e proprietária (mínimo 3 parágrafos) expandindo o contexto.
+        Gere três versões completas e traduzidas: português, inglês e espanhol.
         
         Retorne RIGOROSAMENTE apenas um JSON limpo e válido:
         {{
-            "titulo_pt": " Manchete atraente em português",
-            "texto_pt": "Corpo da notícia completo e profissional em português (mínimo de 3 parágrafos)",
+            "titulo_pt": "Manchete forte em português",
+            "texto_pt": "Corpo da notícia completo e profissional em português",
             "titulo_en": "Manchete em inglês",
-            "texto_en": "Corpo da notícia em inglês (mínimo de 3 parágrafos)",
+            "texto_en": "Corpo da notícia em inglês",
             "titulo_es": "Manchete em espanhol",
-            "texto_es": "Corpo da notícia em espanhol (mínimo de 3 parágrafos)"
+            "texto_es": "Corpo da notícia em espanhol"
         }}
         """
         response = model.generate_content(prompt)
@@ -103,17 +119,17 @@ def pipeline_escrita_ia(titulo_original, link_original, fonte_nome):
             
         dados = json.loads(texto_puro)
     except Exception:
-        dados = motor_traducao_local(titulo_original, fonte_nome)
+        dados = motor_fallback_real(titulo_original, resumo_original, fonte_nome)
         
-    # Links e notas de transparência editorial
-    credito = f"\n\n*Este artigo foi estruturado de forma independente pela redação horizont.news, com dados analíticos de {fonte_nome}. [Leia o documento original no veículo de origem]({link_original}).*"
+    # Rodapé de transparência editorial
+    credito = f"\n\n*Este artigo foi estruturado de forma independente pela redação horizont.news, com dados analíticos de {fonte_nome}. [Leia o despacho original no veículo de origem]({link_original}).*"
     for idioma in ['pt', 'en', 'es']:
         dados[f'texto_{idioma}'] += credito
         
     return dados
 
 # ==========================================
-# 3. INTERFACE VISUAL (PAINEL + PORTAL DO PÚBLICO)
+# 3. INTERFACE VISUAL (FRONT-END DO PORTAL)
 # ==========================================
 
 st.title("🌐 horizont.news — Painel de Controle Integrado")
@@ -131,14 +147,15 @@ if st.button("🔄 Capturar e Processar Novas Notícias do Mundo"):
         status_txt.write(f"📖 Conectando com a agência: **{nome_fonte}**...")
         feed = feedparser.parse(url_rss)
         
-        # Pega a notícia mais fresca do topo de cada uma das 9 fontes mundiais
-        for entrada in feed.entries[:1]:
+        for entrada in feed.entries[:1]: # Coleta a notícia mais quente de cada região
             if entrada.link in links_existentes:
                 continue
                 
-            status_txt.write(f"🤖 IA reescrevendo cobertura global de: *{nome_fonte}*")
-            status, motivo = classificar_sensibilidade(entrada.title, entrada.get('description', ''))
-            dados_ia = pipeline_escrita_ia(entrada.title, entrada.link, nome_fonte)
+            status_txt.write(f"🤖 IA processando cobertura global de: *{nome_fonte}*")
+            
+            resumo_cru = entrada.get('summary', entrada.get('description', ''))
+            status, motivo = classificar_sensibilidade(entrada.title, resumo_cru)
+            dados_ia = pipeline_escrita_ia(entrada.title, resumo_cru, entrada.link, nome_fonte)
             
             if dados_ia:
                 nova_noticia = {
@@ -160,12 +177,12 @@ if st.button("🔄 Capturar e Processar Novas Notícias do Mundo"):
     if com_sucesso > 0:
         salvar_dados_permanentes(banco_atual)
         st.session_state.banco_noticias = banco_atual
-        st.success(f"Sucesso! {com_sucesso} correspondentes internacionais integrados ao banco!")
+        st.success(f"Sucesso! {com_sucesso} agências globais integradas ao feed!")
         st.rerun()
     else:
-        st.info("Nenhum fato novo ou inédito detectado nos satélites de notícias neste minuto.")
+        st.info("Nenhuma matéria inédita nas agências mundiais neste exato segundo.")
 
-# Estruturação de abas
+# Abas Administrativas e Públicas
 aba_publicadas, aba_retidas, aba_visualizacao_site = st.tabs([
     "🟢 Feed de Monitoramento (Automáticas/Aprovadas)", 
     "🟠 Mesa de Edição (Retidas pelo Guardrail)", 
@@ -210,10 +227,10 @@ with aba_retidas:
                     salvar_dados_permanentes(st.session_state.banco_noticias)
                     st.rerun()
 
-# --- EXIBIÇÃO REAL DO SITE PARA O LEITOR ---
+# --- EXIBIÇÃO FORMATADA COMO JORNAL REAL ---
 with aba_visualizacao_site:
-    st.markdown("<h1 style='text-align: center; color: #1e3a8a; font-family: Georgia, serif;'>horizont.news</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; font-style: italic; color: #6b7280;'>A perspectiva geopolítica global em tempo real</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #1e3a8a; font-family: Georgia, serif; font-size: 3rem;'>horizont.news</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; font-style: italic; color: #6b7280;'>A cobertura geopolítica global descentralizada</p>", unsafe_allow_html=True)
     st.write("---")
     
     idioma_selecionado = st.radio("Selecione a Edição Global / Language", ["Português", "English", "Español"], horizontal=True)
@@ -222,22 +239,17 @@ with aba_visualizacao_site:
     noticias_para_exibir = [n for n in st.session_state.banco_noticias if n['status'] == 'APROVADO']
     
     if not noticias_para_exibir:
-        st.info("Nenhum artigo publicado nas últimas horas no feed público.")
+        st.info("Nenhum artigo publicado no feed público ainda. Forneça a API Key ou clique em 'Capturar' para iniciar o feed permanente.")
     else:
-        # Exibe as notícias em formato jornalístico limpo de leitura
         for n in reversed(noticias_para_exibir):
-            st.markdown(f"<h2 style='color: #1e3a8a; font-family: Georgia, serif;'>{n[f'titulo_{lang_code}']}</h2>", unsafe_allow_html=True)
-            st.markdown(f"<p style='color: #854d0e; font-size: 0.85rem; font-weight: bold;'>🌐 CANAL COBERTURA: {n['fonte_origem']} | 📅 REGISTRO: {n['data']}</p>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='color: #1e3a8a; font-family: Georgia, serif; line-height: 1.3;'>{n[f'titulo_{lang_code}']}</h2>", unsafe_allow_html=True)
+            st.markdown(f"<p style='color: #b45309; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;'>🌐 AGÊNCIA EMISSORA: {n['fonte_origem']} | 📅 DATA DE CHEGADA: {n['data']}</p>", unsafe_allow_html=True)
             
-            # Divide os parágrafos de texto para dar legibilidade de jornal de verdade
+            # Formatação refinada de parágrafos para o público geral
             paragrafos = n[f'texto_{lang_code}'].split("\n\n")
             for parágrafo in paragrafos:
                 if parágrafo.strip():
-                    st.write(parágrafo)
-                    
-            col_audio, col_emoji = st.columns([1, 1])
-            with col_audio:
-                st.caption("🔊 Ouvir esta cobertura por áudio")
-            with col_emoji:
-                st.write("Interagir: 👍 | 🔥 | 🧠")
-            st.markdown("<hr style='border: 1px solid #e5e7eb;' />", unsafe_allow_html=True)
+                    st.markdown(f"<p style='font-size: 1.1rem; line-height: 1.6; text-align: justify; font-family: sans-serif; color: #1f2937;'>{parágrafo}</p>", unsafe_allow_html=True)
+            
+            st.markdown("<div style='display: flex; gap: 15px; margin-top: 10px;'><span style='cursor:pointer;'>👍 Útil</span> | <span style='cursor:pointer;'>🔥 Relevante</span> | <span style='cursor:pointer;'>🧠 Neutro</span></div>", unsafe_allow_html=True)
+            st.markdown("<hr style='border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;' />", unsafe_allow_html=True)
