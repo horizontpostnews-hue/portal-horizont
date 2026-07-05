@@ -8,7 +8,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# Link direto para o banco de dados sem passar por cache de disco do servidor
 URL_BANCO_RAW = "https://raw.githubusercontent.com/horizontpostnews-hue/portal-horizont/refs/heads/main/banco_noticias.json"
 
 def ler_banco_dados_fresco():
@@ -32,13 +31,11 @@ def obtener_tag_categoria(titulo, texto):
         return "🚨 URGENTE / ALERTA"
     return "📌 INTERNACIONAL"
 
-# Esconde o menu lateral de páginas do Streamlit para o leitor comum
 st.markdown(
     "<style>#MainMenu {visibility: hidden;} [data-testid='stSidebar'] {display: none;}</style>", 
     unsafe_allow_html=True
 )
 
-# Cabeçalho do Leitor
 st.markdown(
     """
     <div style="background-color:#0f172a; padding:25px; border-radius:12px; margin-bottom:25px; text-align:center; border: 1px solid #1e293b;">
@@ -59,7 +56,6 @@ if not noticias:
 else:
     noticias_recentes = list(reversed(noticias))
     
-    # Grade em 2 colunas paralela
     for i in range(0, len(noticias_recentes), 2):
         cols = st.columns(2)
         for idx, col in enumerate(cols):
@@ -68,6 +64,7 @@ else:
                 titulo = item.get(f"titulo_{sufixo}", item.get("titulo_pt", "Sem Título"))
                 texto = item.get(f"texto_{sufixo}", item.get("texto_pt", "Sem Conteúdo"))
                 tag = obtener_tag_categoria(titulo, texto)
+                link_origem = item.get("link_origem", "#")
                 
                 with col:
                     with st.container(border=True):
@@ -75,3 +72,5 @@ else:
                         st.subheader(titulo)
                         st.caption(f"📅 {item.get('data')} | 🏛️ Fonte: {item.get('fonte_origem')}")
                         st.markdown(texto)
+                        # Aqui está o link devolvido e com visual clicável
+                        st.markdown(f"**[🔗 Acessar matéria completa na agência original]({link_origem})**")
