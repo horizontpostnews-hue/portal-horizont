@@ -35,6 +35,7 @@ def obter_tag_categoria(titulo, texto):
     return "📌 INTERNACIONAL"
 
 # Cabeçalho do Leitor
+# Cabeçalho do Leitor Corrigido
 st.markdown(
     """
     <div style="background-color:#0f172a; padding:25px; border-radius:12px; margin-bottom:25px; text-align:center; border: 1px solid #1e293b;">
@@ -42,7 +43,7 @@ st.markdown(
         <p style="color:#38bdf8; font-size:15px; margin:5px 0 0 0; font-weight:500;">Feed Internacional Geopolítico em Tempo Real</p>
     </div>
     """, 
-    unsafe_style_allowed=True
+    unsafe_allow_html=True  # <-- CORRIGIDO AQUI
 )
 
 idioma = st.selectbox("🌎 Idioma / Language / Idioma", ["Português", "English", "Español"])
