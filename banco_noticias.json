@@ -50,5 +50,57 @@
         "texto_en": "Mojtaba Khamenei has not been seen in public since the attack which killed his father at the outset of the US-Israel war with Iran.",
         "titulo_es": "El líder supremo de Irán está ausente mientras altos funcionarios asisten al funeral del ayatolá",
         "texto_es": "Mojtaba Khamenei no ha sido visto en público desde el ataque que mató a su padre al comienzo de la guerra entre Estados Unidos e Israel contra Irán."
+    },
+    {
+        "id": 5,
+        "data": "05/07/2026 22:50",
+        "fonte_origem": "Al Jazeera (Oriente Médio)",
+        "link_origem": "https://www.aljazeera.com/sports/2026/7/5/haaland-scores-twice-as-norway-stun-brazil-2-1-in-world-cup-2026-last-16?traffic_source=rss",
+        "status": "APROVADO",
+        "titulo_pt": "Haaland marcou dois gols na vitória da Noruega sobre o Brasil por 2 a 1 nas oitavas de final da Copa do Mundo de 2026",
+        "texto_pt": "Os dois gols de Haaland o levaram a sete gols no torneio, com a Noruega marcando as quartas de final contra o México ou a Inglaterra.",
+        "titulo_en": "Haaland scores twice as Norway stun Brazil 2-1 in World Cup 2026 last 16",
+        "texto_en": "Haaland&#039;s brace takes him to seven goals for the tournament as Norway book quarterfinal against Mexico or England.",
+        "titulo_es": "Haaland anota dos goles y Noruega sorprende a Brasil 2-1 en los octavos de final del Mundial 2026",
+        "texto_es": "El doblete de Haaland lo lleva a siete goles en el torneo, mientras Noruega se enfrenta a cuartos de final contra México o Inglaterra."
+    },
+    {
+        "id": 6,
+        "data": "05/07/2026 22:50",
+        "fonte_origem": "Al Jazeera (Oriente Médio)",
+        "link_origem": "https://www.aljazeera.com/news/2026/7/5/palestinian-baby-dies-in-west-bank-after-israel-blocks-urgent-medical-care?traffic_source=rss",
+        "status": "APROVADO",
+        "titulo_pt": "Bebê palestino morre na Cisjordânia depois que Israel bloqueia atendimento médico urgente",
+        "texto_pt": "As forças israelitas também mataram a tiro um rapaz de 16 anos na Cisjordânia ocupada e mataram dois palestinianos em Gaza.",
+        "titulo_en": "Palestinian baby dies in West Bank after Israel blocks urgent medical care",
+        "texto_en": "Israeli forces also shoot dead a 16-year-old boy in the occupied West Bank and kill two Palestinians in Gaza.",
+        "titulo_es": "Bebé palestino muere en Cisjordania después de que Israel bloquee la atención médica urgente",
+        "texto_es": "Las fuerzas israelíes también mataron a tiros a un joven de 16 años en la ocupada Cisjordania y mataron a dos palestinos en Gaza."
+    },
+    {
+        "id": 7,
+        "data": "05/07/2026 22:50",
+        "fonte_origem": "Al Jazeera (Oriente Médio)",
+        "link_origem": "https://www.aljazeera.com/video/newsfeed/2026/7/5/turkiye-gears-up-for-its-first-nato-summit-in-22-years?traffic_source=rss",
+        "status": "APROVADO",
+        "titulo_pt": "Turkiye prepara-se para a sua primeira cimeira da NATO em 22 anos",
+        "texto_pt": "Os líderes dos estados membros da OTAN são esperados em Turkiye até 7 de julho para uma cimeira – a primeira que será anfitriã em 22 anos.",
+        "titulo_en": "Turkiye gears up for its first NATO summit in 22 years",
+        "texto_en": "Leaders of the NATO member states are expected in Turkiye by July 7 for a summit - the first it will host in 22 years.",
+        "titulo_es": "Turkiye se prepara para su primera cumbre de la OTAN en 22 años",
+        "texto_es": "Se espera que los líderes de los Estados miembros de la OTAN acudan a Turkiye el 7 de julio para celebrar una cumbre, la primera que acogerá en 22 años."
+    },
+    {
+        "id": 8,
+        "data": "05/07/2026 22:50",
+        "fonte_origem": "BBC News (Reino Unido)",
+        "link_origem": "https://www.bbc.co.uk/news/videos/c4gyye3rplno?at_medium=RSS&at_campaign=rss",
+        "status": "APROVADO",
+        "titulo_pt": "Assistir: Lyse Doucet sobre emoção e política no funeral do ex-líder supremo em Teerã",
+        "texto_pt": "O principal correspondente internacional da BBC informa de Teerã, onde estão ocorrendo eventos fúnebres em homenagem ao ex-líder do Irã, o aiatolá Ali Khamenei.",
+        "titulo_en": "Watch: Lyse Doucet on emotion and politics at Tehran funeral of former supreme leader",
+        "texto_en": "The BBC's chief international correspondent reports from Tehran where funeral events are taking place in honour of Iran's former leader, Ayatollah Ali Khamenei.",
+        "titulo_es": "Ver: Lyse Doucet sobre las emociones y la política en el funeral del ex líder supremo en Teherán",
+        "texto_es": "El principal corresponsal internacional de la BBC informa desde Teherán, dónde se están llevando a cabo los funerales en honor del ex líder de Irán, el ayatolá Ali Jamenei."
     }
 ]
