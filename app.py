@@ -1,63 +1,73 @@
 import streamlit as st
 import json
-import os
+import urllib.request
 
-# Configuração da página do portal
 st.set_page_config(
-    page_title="horizont.news — Painel",
+    page_title="horizont.news — Notícias do Mundo",
     page_icon="🌐",
     layout="wide"
 )
 
-ARQUIVO_BANCO = "banco_noticias.json"
+# ⚠️ APAGUE O LINK ABAIXO E COLE O LINK "RAW" QUE VOCÊ COPIOU DO SEU GITHUB:
+URL_BANCO_RAW = https://raw.githubusercontent.com/horizontpostnews-hue/portal-horizont/refs/heads/main/banco_noticias.json
 
-# Função ultra-rápida que apenas lê o banco de dados atualizado pelo robô
-def carregar_noticias_locais():
-    if os.path.exists(ARQUIVO_BANCO):
-        try:
-            with open(ARQUIVO_BANCO, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except:
-            return []
-    return []
+def ler_banco_dados_fresco():
+    try:
+        # Puxa o arquivo direto da internet sem passar pelo cache do servidor
+        req = urllib.request.Request(
+            URL_BANCO_RAW, 
+            headers={'User-Agent': 'Mozilla/5.0', 'Cache-Control': 'no-cache'}
+        )
+        with urllib.request.urlopen(req) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except Exception as e:
+        st.sidebar.error(f"Erro de conexão com o banco: {e}")
+        return []
 
-# Título Principal do Portal
-st.title("🌐 horizont.news — Painel de Controle Integrado")
-st.markdown("---")
+def obter_tag_categoria(titulo, texto):
+    conteudo = f"{titulo} {texto}".lower()
+    if any(w in conteudo for w in ["banco", "tax", "gold", "ouro", "trade", "mercado", "comércio", "celebrate"]):
+        return "💰 ECONOMIA / CULTURA"
+    elif any(w in conteudo for w in ["trump", "biden", "president", "election", "governo", "ministro", "un", "onu"]):
+        return "🏛️ GEOPOLÍTICA"
+    elif any(w in conteudo for w in ["bomba", "atack", "ataque", "guerra", "war", "morreu", "fogo", "weather", "alerta"]):
+        return "🚨 URGENTE / ALERTA"
+    return "📌 INTERNACIONAL"
 
-# Botão de atualização rápida da interface
-if st.button("🔄 Atualizar Feed de Notícias"):
-    st.rerun()
+# Cabeçalho do Leitor
+st.markdown(
+    """
+    <div style="background-color:#0f172a; padding:25px; border-radius:12px; margin-bottom:25px; text-align:center; border: 1px solid #1e293b;">
+        <h1 style="color:#f8fafc; margin:0; font-family: 'Helvetica Neue', sans-serif; letter-spacing: 1px;">🌐 horizont.news</h1>
+        <p style="color:#38bdf8; font-size:15px; margin:5px 0 0 0; font-weight:500;">Feed Internacional Geopolítico em Tempo Real</p>
+    </div>
+    """, 
+    unsafe_style_allowed=True
+)
 
-# Carrega os dados coletados de forma segura
-noticias = carregar_noticias_locais()
+idioma = st.selectbox("🌎 Idioma / Language / Idioma", ["Português", "English", "Español"])
+sufixo = {"Português": "pt", "English": "en", "Español": "es"}[idioma]
+
+noticias = ler_banco_dados_fresco()
 
 if not noticias:
-    st.info("📢 O robô está processando os dados geopolíticos globais. Aguarde a próxima rodada automática ou verifique os logs no GitHub Actions.")
+    st.info("📢 Atualizando a central de notícias mundiais. Volte em instantes!")
 else:
-    # Seletor de Idioma para o usuário internacional
-    idioma = st.selectbox("🌎 Selecione o Idioma / Select Language / Seleccione el Idioma", ["Português", "English", "Español"])
+    noticias_recentes = list(reversed(noticias))
     
-    # Mapeamento de sufixos do nosso banco JSON
-    sufixos = {
-        "Português": "pt",
-        "English": "en",
-        "Español": "es"
-    }
-    sufixo = sufixos[idioma]
-    
-    # Exibe as notícias em formato de cards elegantes
-    # Mostra primeiro as notícias mais recentes (ordem inversa)
-    for item in reversed(noticias):
-        titulo_chave = f"titulo_{sufixo}"
-        texto_chave = f"texto_{sufixo}"
-        
-        # Garante que a tradução exista no banco, senão usa português como segurança
-        titulo_exibir = item.get(titulo_chave, item.get("titulo_pt", "Sem Título"))
-        texto_exibir = item.get(texto_chave, item.get("texto_pt", "Sem Conteúdo disponível."))
-        
-        with st.container():
-            st.subheader(titulo_exibir)
-            st.caption(f"📅 Coletado em: {item.get('data')} | 🏛️ Fonte de Origem: {item.get('fonte_origem')}")
-            st.markdown(texto_exibir)
-            st.markdown("---")
+    # Grid de 2 colunas para o Leitor
+    for i in range(0, len(noticias_recentes), 2):
+        cols = st.columns(2)
+        for idx, col in enumerate(cols):
+            if i + idx < len(noticias_recentes):
+                item = noticias_recentes[i + idx]
+                titulo = item.get(f"titulo_{sufixo}", item.get("titulo_pt", "Sem Título"))
+                texto = item.get(f"texto_{sufixo}", item.get("texto_pt", "Sem Conteúdo"))
+                tag = obter_tag_categoria(titulo, texto)
+                
+                with col:
+                    with st.container(border=True):
+                        st.caption(f"**{tag}**")
+                        st.subheader(titulo)
+                        st.caption(f"📅 {item.get('data')} | 🏛️ Fonte: {item.get('fonte_origem')}")
+                        st.markdown(texto)
