@@ -9,7 +9,7 @@ st.set_page_config(
 )
 
 # ⚠️ APAGUE O LINK ABAIXO E COLE O LINK "RAW" QUE VOCÊ COPIOU DO SEU GITHUB:
-URL_BANCO_RAW = https://raw.githubusercontent.com/horizontpostnews-hue/portal-horizont/refs/heads/main/banco_noticias.json
+URL_BANCO_RAW = "https://raw.githubusercontent.com/horizontpostnews-hue/portal-horizont/refs/heads/main/banco_noticias.json"
 
 def ler_banco_dados_fresco():
     try:
