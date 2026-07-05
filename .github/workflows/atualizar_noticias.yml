@@ -2,11 +2,9 @@ name: Executar Robo de Noticias
 
 on:
   schedule:
+    # Roda automaticamente a cada 1 hora
     - cron: '0 * * * *'
-  workflow_dispatch:
-
-permissions:
-  contents: write
+  workflow_dispatch: # Permite que você aperte o botão para rodar manualmente
 
 jobs:
   rodar-script:
@@ -22,19 +20,17 @@ jobs:
 
       - name: Instalar ferramentas necessarias
         run: |
-          pip install -r requirements.txt
+          pip install feedparser google-generativeai
 
       - name: Executar Robo
-        timeout-minutes: 15  # <--- DA MAIS TEMPO PARA O ROBÔ TRADUZIR TUDO
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python cron_script.py
 
-      - name: Salvar alteracoes no banco de dados
+      - name: Salvar e Enviar as Noticias para o Repositorio
         run: |
-          git config --global user.name "Robo Horizont"
+          git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          touch banco_noticias.json
           git add banco_noticias.json || true
-          git commit -m "database: atualizacao automatica de noticias globais [skip ci]" || true
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main || true
+          git commit -m "Automatizado: Atualizando banco de noticias [skip ci]" || true
+          git push || true
