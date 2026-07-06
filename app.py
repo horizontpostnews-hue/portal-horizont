@@ -29,7 +29,7 @@ st.markdown(
         summary::-webkit-details-marker { display: none !important; }
         summary::before { content: "📝 " !important; }
 
-        /* Renderização Direta de Imagem via Navegador (Contorna bloqueios do servidor) */
+        /* Renderização Direta de Imagem via Navegador */
         .web-img-container {
             width: 100%;
             height: 220px;
@@ -99,7 +99,7 @@ def obter_oferta_afiliado(categoria):
             "link": "https://www.amazon.com.br?tag=seu_id_afiliado-20"
         },
         "Tech & Ciência": {
-            "texto": "💻 <b>Upgrade Tecnológico:</b> Procurando gadgets para aumentar sua produtividade? Confira a seleção semanal com até 20% OFF.",
+            "texto": "💻 <b>Upgrade Tecnológico:</b> Procurando gadgets para aumentare a produtividade? Confira a seleção semanal com até 20% OFF.",
             "cupom": "TECHHORIZONT",
             "link": "https://www.amazon.com.br?tag=seu_id_afiliado-20"
         },
@@ -154,11 +154,7 @@ else:
             subcategoria = item.get("subcategoria", "")
             link_origem = item.get("link_origem", "#")
             
-            # CAPTURA DA IMAGEM DO BANCO DE DADOS
             url_foto = item.get("url_imagem")
-            
-            total_palavras = len(texto.split()) + len(item.get('resumo_longo', '').split())
-            tempo_leitura = max(1, round(total_palavras / 150))
             
             cor_tag = obter_cor_categoria(categoria)
             
@@ -170,7 +166,6 @@ else:
 
             with coluna_atual:
                 with st.container(border=True):
-                    # EXIBIÇÃO DIRETA VIA NAVEGADOR COM FALLBACK SEGURO
                     if url_foto and url_foto.strip() != "":
                         st.markdown(f'<div class="web-img-container"><img src="{url_foto}" alt="Notícia"></div>', unsafe_allow_html=True)
                     else:
