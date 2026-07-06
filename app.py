@@ -1,7 +1,6 @@
 import streamlit as st
 import json
 import urllib.request
-import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="horizont.news — Conectando Gerações",
@@ -9,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ESTILIZAÇÃO DO PORTAL (CORRIGIDA E OTIMIZADA)
+# ESTILIZAÇÃO DO PORTAL (CORRIGIDA PARA ALINHAMENTO E ÁUDIO LIMPO)
 st.markdown(
     """
     <style>
@@ -20,12 +19,17 @@ st.markdown(
         #MainMenu {visibility: hidden;} 
         [data-testid='stSidebar'] {display: none;}
         
-        /* Ajuste de Grid e Cards para manter harmonia */
+        /* Forçar todos os cards a terem uma estrutura vertical alinhada */
         [data-testid="stVerticalBlockBorder"] {
-            height: 100% !important;
             display: flex !important;
             flex-direction: column !important;
+            height: 100% !important;
             justify-content: space-between !important;
+        }
+
+        /* Limitar o tamanho do bloco de texto superior para alinhar as colunas */
+        .noticia-header-bloco {
+            min-height: 110px;
         }
 
         .texto-noticia { 
@@ -33,7 +37,7 @@ st.markdown(
             font-size: 14.5px !important; 
             line-height: 1.6 !important; 
             font-weight: 400 !important;
-            margin-bottom: 15px !important;
+            margin-bottom: 10px !important;
         }
         
         .titulo-noticia { 
@@ -41,35 +45,32 @@ st.markdown(
             font-weight: 700 !important; 
             font-size: 19px !important; 
             line-height: 1.3 !important; 
-            margin-top: 10px !important; 
+            margin-top: 8px !important; 
             margin-bottom: 6px !important; 
         }
 
-        /* CORREÇÃO DO CARD DE IMAGEM: Proporção perfeita sem cortes agressivos */
+        /* Imagem Proporcional */
         .web-img-container {
             width: 100%;
-            height: 230px;
+            height: 210px;
             border-radius: 10px;
             overflow: hidden;
             margin-bottom: 12px;
             background-color: #0f172a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         .web-img-container img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Mantém preenchimento elegante */
+            object-fit: cover;
         }
 
         /* Acordeão HTML Nativo */
-        details { background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important; padding: 10px 14px !important; margin-top: 10px !important; }
+        details { background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important; padding: 10px 14px !important; margin-top: 12px !important; }
         summary { font-weight: 600 !important; color: #0f172a !important; cursor: pointer !important; font-size: 14px !important; list-style: none !important; }
         summary::-webkit-details-marker { display: none !important; }
         summary::before { content: "📝 " !important; }
 
-        /* Box de Afiliados / Cupons Premium */
+        /* Box de Afiliados */
         .box-afiliado {
             background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
             border: 1px dashed #22c55e;
@@ -78,6 +79,27 @@ st.markdown(
             margin-top: 15px;
             font-size: 13px;
             color: #14532d;
+        }
+
+        /* Botão de Áudio Nativo sem Iframe (Blindado contra quebras e barras cinzas) */
+        .btn-audio-player {
+            background-color: #0f172a !important; 
+            color: #00f5d4 !important; 
+            border: none !important; 
+            padding: 10px 16px !important; 
+            border-radius: 20px !important; 
+            cursor: pointer !important; 
+            font-size: 13px !important; 
+            font-weight: 700 !important; 
+            width: 100% !important; 
+            text-align: center !important;
+            display: block !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            text-decoration: none !important;
+            margin-top: 10px !important;
+        }
+        .btn-audio-player:hover {
+            background-color: #1e293b !important;
         }
     </style>
     """, 
@@ -196,29 +218,37 @@ else:
 
             with coluna_atual:
                 with st.container(border=True):
-                    # Exibição de Imagem com CSS aprimorado
+                    # Renderização de imagem limpa
                     if url_foto and str(url_foto).strip() != "":
                         st.markdown(f'<div class="web-img-container"><img src="{url_foto}" alt="Notícia"></div>', unsafe_allow_html=True)
                     else:
                         st.markdown(f'<div class="web-img-container" style="display: flex; align-items: center; justify-content: center;"><div style="color: #00f5d4; font-weight: 800; font-size: 20px;">🌐 horizont.news</div></div>', unsafe_allow_html=True)
-                        
-                    st.markdown(f"<div style='margin-bottom:8px;'>{tag_html}</div>", unsafe_allow_html=True)
-                    st.markdown(f"<h3 class='titulo-noticia'>{titulo}</h3>", unsafe_allow_html=True)
-                    st.markdown(f"<p style='color:#64748b; font-size:12px; margin-bottom:12px;'>📅 {item.get('data')} • 🏛️ Fonte: <b>{item.get('fonte_origem')}</b></p>", unsafe_allow_html=True)
-                    st.markdown(f"<p class='texto-noticia'>{texto}</p>", unsafe_allow_html=True)
                     
+                    # Bloco superior empacotado para alinhar as alturas verticais
+                    st.markdown(
+                        f"""
+                        <div class="noticia-header-bloco">
+                            <div style='margin-bottom:8px;'>{tag_html}</div>
+                            <h3 class='titulo-noticia'>{titulo}</h3>
+                            <p style='color:#64748b; font-size:12px; margin-bottom:12px;'>📅 {item.get('data')} • 🏛️ Fonte: <b>{item.get('fonte_origem')}</b></p>
+                        </div>
+                        """, 
+                        unsafe_allow_html=True
+                    )
+                    
+                    st.markdown(f"<p class='texto-noticia'>{texto}</p>", unsafe_allow_html=True)
                     st.divider()
                     
-                    # PLAYER DE ÁUDIO RECOBERTO (Elimina bordas indesejadas)
-                    texto_limpo = str(texto).replace('"', '').replace("'", "").replace('\n', ' ')
-                    titulo_limpo = str(titulo).replace('"', '').replace("'", "")
-                    html_audio = f"""
-                    <div style="display: flex; justify-content: center; margin-bottom: 0px;">
-                        <button onclick="window.speechSynthesis.cancel(); var msg = new SpeechSynthesisUtterance('{titulo_limpo}. {texto_limpo}'); msg.lang='{lang_audio}'; window.speechSynthesis.speak(msg);" 
-                        style="background-color:#0f172a; color:#00f5d4; border: none; padding: 10px 22px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 700; width: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">🔊 Ouvir Matéria em Áudio</button>
-                    </div>
+                    # CORREÇÃO DO ÁUDIO: Executado de forma nativa por um botão inline sem gerar um Iframe quadrado cinza
+                    texto_limpo = str(texto).replace('"', '&quot;').replace("'", "\\'").replace('\n', ' ')
+                    titulo_limpo = str(titulo).replace('"', '&quot;').replace("'", "\\'")
+                    
+                    html_audio_direto = f"""
+                    <button class="btn-audio-player" onclick="window.speechSynthesis.cancel(); var msg = new SpeechSynthesisUtterance('{titulo_limpo}. {texto_limpo}'); msg.lang='{lang_audio}'; window.speechSynthesis.speak(msg);">
+                        🔊 Ouvir Matéria em Áudio
+                    </button>
                     """
-                    components.html(html_audio, height=45)
+                    st.markdown(html_audio_direto, unsafe_allow_html=True)
                     
                     # ACORDEÃO
                     resumo_denso = item.get('resumo_longo', item.get('texto_pt', 'O detalhamento completo desta matéria está sendo processado.'))
