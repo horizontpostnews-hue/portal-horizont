@@ -134,7 +134,7 @@ else:
 
     categorias_dinamicas = sorted(list(set(item.get("categoria", "Política") for item in noticias)))
     with col_filtro:
-        categoria_selecionada = st.selectbox("🎯 Filtrar Canal", ["Feed Completo (Todos os Assuntos)"] + categories_dinamicas)
+        categoria_selecionada = st.selectbox("🎯 Filtrar Canal", ["Feed Completo (Todos os Assuntos)"] + categorias_dinamicas)
 
     noticias_recentes = list(reversed(noticias))
     if categoria_selecionada != "Feed Completo (Todos os Assuntos)":
