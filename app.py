@@ -4,12 +4,12 @@ import urllib.request
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="horizont.news — Conectando Gerações e Culturas",
+    page_title="horizont.news — Conectando Gerações",
     page_icon="🌐",
     layout="wide"
 )
 
-# ESTILIZAÇÃO PREMIUM, MODERNA E INCLUSIVA
+# AJUSTES DE UX: Focado em legibilidade máxima e correção de bugs visuais
 st.markdown(
     """
     <style>
@@ -24,18 +24,18 @@ st.markdown(
         #MainMenu {visibility: hidden;} 
         [data-testid='stSidebar'] {display: none;}
         
-        /* Customização dos Cards para torná-los escaneáveis e atraentes */
-        div[data-testid="stContainer"] {
-            background-color: #0b1329 !important;
-            border: 1px solid #1c2541 !important;
-            border-radius: 16px !important;
-            padding: 20px !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-            transition: transform 0.2s ease, border-color 0.2s ease;
+        /* Força o texto das notícias a ter alto contraste (Preto/Grafite escuro) */
+        .texto-noticia {
+            color: #1e293b !important;
+            font-size: 15px !important;
+            line-height: 1.6 !important;
+            font-weight: 400 !important;
         }
-        div[data-testid="stContainer"]:hover {
-            transform: translateY(-2px);
-            border-color: #00f5d4 !important;
+        
+        /* Título das notícias em destaque */
+        .titulo-noticia {
+            color: #0f172a !important;
+            font-weight: 700 !important;
         }
     </style>
     """, 
@@ -56,12 +56,12 @@ def ler_banco_dados_fresco():
     except Exception as e:
         return []
 
-# DESIGN DO CABEÇALHO: Sofisticado para o profissional, moderno para o jovem
+# HEADER DO PORTAL
 st.markdown(
     """
-    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:25px; border-radius:16px; margin-bottom:20px; text-align:center; border: 1px solid #334155;">
-        <h1 style="color:#00f5d4; margin:0; font-weight:700; letter-spacing: -0.5px; font-size: 36px;">🌐 horizont.news</h1>
-        <p style="color:#94a3b8; font-size:14px; margin:6px 0 0 0; font-weight:400; letter-spacing: 0.2px;">
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:22px; border-radius:14px; margin-bottom:20px; text-align:center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+        <h1 style="color:#00f5d4; margin:0; font-weight:700; letter-spacing: -0.5px; font-size: 32px;">🌐 horizont.news</h1>
+        <p style="color:#94a3b8; font-size:13px; margin:5px 0 0 0; font-weight:400;">
             Informação sem fronteiras — Perspectivas globais para mentes conectadas
         </p>
     </div>
@@ -69,32 +69,31 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# TICKER DINÂMICO
+# TICKER
 st.markdown("""
-<marquee style='width: 100%; color: #0b1329; background-color: #00f5d4; padding: 10px; font-size: 13px; font-weight: 700; border-radius: 30px; margin-bottom: 25px;'>
-    ⚡ AGORA NO MUNDO: Cobertura integrada multiplataforma • Geopolítica, Economia, Cotidiano, Tendências Pop e Inovação Tecnológica em tempo real direto das principais agências globais...
+<marquee style='width: 100%; color: #0f172a; background-color: #00f5d4; padding: 8px; font-size: 13px; font-weight: 700; border-radius: 8px; margin-bottom: 25px;'>
+    ⚡ AGORA NO MUNDO: Cobertura integrada multiplataforma • Geopolítica, Economia, Cotidiano, Tendências Pop e Inovação Tecnológica em tempo real direto das agências globais...
 </marquee>
 """, unsafe_allow_html=True)
 
 noticias = ler_banco_dados_fresco()
 
-# Função auxiliar para gerar cores vibrantes nas tags por assunto (Aquece o visual do site)
 def obter_cor_categoria(cat):
     cores = {
-        "Política": "#ff5c5c",
-        "Economia": "#4caf50",
-        "Cotidiano": "#2196f3",
-        "Esportes": "#ff9800",
-        "Cultura & Pop": "#e91e63",
-        "Tech & Ciência": "#9c27b0",
-        "Viver Bem": "#00bcd4"
+        "Política": "#e11d48",
+        "Economia": "#16a34a",
+        "Cotidiano": "#2563eb",
+        "Esportes": "#ea580c",
+        "Cultura & Pop": "#db2777",
+        "Tech & Ciência": "#7c3aed",
+        "Viver Bem": "#0d9488"
     }
-    return cores.get(cat, "#607d8b")
+    return cores.get(cat, "#4b5563")
 
 if not noticias:
     st.info("📢 Sincronizando feeds mundiais. A sua janela para o planeta está carregando...")
 else:
-    # FILTROS LADO A LADO: Visual limpo e responsivo para smartphones
+    # FILTROS
     col_lang, col_filtro = st.columns(2)
 
     with col_lang:
@@ -116,18 +115,17 @@ else:
             if item.get("categoria") == categoria_selecionada and item.get("subcategoria")
         )))
         if subcategorias_dinamicas:
-            sub_selecionada = st.selectbox(f"🏷️ Refinar Tópico em {categoria_selecionada}", ["Todas as Subcategorias"] + subcategorias_dinamicas)
+            sub_selecionada = st.selectbox(f"🏷️ Refinar em {categoria_selecionada}", ["Todas as Subcategorias"] + subcategorias_dinamicas)
 
-    # PROCESSAMENTO DE EXIBIÇÃO
+    # FILTRAGEM
     noticias_recentes = list(reversed(noticias))
-    
     if categoria_selecionada != "Feed Completo (Todos os Assuntos)":
         noticias_recentes = [n for n in noticias_recentes if n.get("categoria", "Política") == categoria_selecionada]
         if sub_selecionada != "Todas as Subcategorias":
             noticias_recentes = [n for n in noticias_recentes if n.get("subcategoria", "") == sub_selecionada]
     
     if not noticias_recentes:
-        st.warning(f"Sem registros novos para este canal no momento. Tente mudar o filtro acima.")
+        st.warning(f"Sem registros novos para este canal no momento.")
     else:
         col1, col2 = st.columns(2)
         
@@ -141,59 +139,60 @@ else:
             link_origem = item.get("link_origem", "#")
             chave_unica = item.get('id', str(index))
             
-            # Cálculo de tempo de leitura (Média: 150 palavras por minuto)
             total_palavras = len(texto.split()) + len(item.get('resumo_longo', '').split())
             tempo_leitura = max(1, round(total_palavras / 150))
             
             cor_tag = obter_cor_categoria(categoria)
-            tag_html = f"<span style='background-color:{cor_tag}; color:white; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; margin-right:8px;'>{categoria}</span>"
+            tag_html = f"<span style='background-color:{cor_tag}; color:white; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase; margin-right:6px;'>{categoria}</span>"
             if subcategoria:
-                tag_html += f"<span style='background-color:#1c2541; color:#94a3b8; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600;'>{subcategoria}</span>"
+                tag_html += f"<span style='background-color:#f1f5f9; color:#475569; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; border: 1px solid #e2e8f0;'>{subcategoria}</span>"
 
             with coluna_atual:
                 with st.container(border=True):
-                    # Tags e metadados com design moderno
-                    st.markdown(f"<div style='margin-bottom:12px;'>{tag_html}</div>", unsafe_allow_html=True)
+                    # Tags Editoriais
+                    st.markdown(f"<div style='margin-bottom:10px;'>{tag_html}</div>", unsafe_allow_html=True)
                     
-                    st.subheader(titulo)
+                    # Título com Classe de Cor Escura Fixa
+                    st.markdown(f"<h3 class='titulo-noticia'>{titulo}</h3>", unsafe_allow_html=True)
                     
-                    # Linha de utilidades (Data + Tempo de leitura para atrair Geração Z e profissionais ágeis)
-                    st.markdown(f"<p style='color:#64748b; font-size:12px; margin-bottom:14px;'>📅 {item.get('data')} • ⏱️ {tempo_leitura} min de leitura • 🏛️ {item.get('fonte_origem')}</p>", unsafe_allow_html=True)
+                    # Metadados
+                    st.markdown(f"<p style='color:#64748b; font-size:12px; margin-top:4px; margin-bottom:12px;'>📅 {item.get('data')} • ⏱️ {tempo_leitura} min • 🏛️ {item.get('fonte_origem')}</p>", unsafe_allow_html=True)
                     
-                    st.markdown(f"<p style='color:#cbd5e1; font-size:15px; line-height:1.6;'>{texto}</p>", unsafe_allow_html=True)
+                    # TEXTO DA NOTÍCIA (Alto Contraste e Leitura Confortável)
+                    st.markdown(f"<p class='texto-noticia'>{texto}</p>", unsafe_allow_html=True)
                     
                     st.divider()
                     
-                    # PLAYER DE ÁUDIO ACESSÍVEL
+                    # AUDIO PLAYER
                     texto_limpo = texto.replace('"', '').replace("'", "").replace('\n', ' ')
                     titulo_limpo = titulo.replace('"', '').replace("'", "")
                     html_audio = f"""
                     <div style="display: flex; justify-content: center; margin-bottom: 5px;">
                         <button onclick="window.speechSynthesis.cancel(); var msg = new SpeechSynthesisUtterance('{titulo_limpo}. {texto_limpo}'); msg.lang='{lang_audio}'; window.speechSynthesis.speak(msg);" 
-                        style="background-color:#00f5d4; color:#0b1329; border: none; padding: 8px 20px; border-radius: 25px; cursor: pointer; font-size: 13px; font-weight: 700; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                        style="background-color:#0f172a; color:#00f5d4; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 700;">
                             🔊 Ouvir Notícia
                         </button>
                         <button onclick="window.speechSynthesis.cancel();" 
-                        style="background-color:transparent; color:#f43f5e; border: none; margin-left: 15px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                        style="background-color:transparent; color:#e11d48; border: none; margin-left: 12px; cursor: pointer; font-size: 13px; font-weight: 600;">
                             ⏹️ Parar
                         </button>
                     </div>
                     """
-                    components.html(html_audio, height=45)
+                    components.html(html_audio, height=42)
                     
-                    # INTERATIVIDADE: Sistema rápido de votação para engajar os leitores
-                    st.markdown("<p style='color:#64748b; font-size:12px; margin-bottom:6px; font-weight:600;'>Qual o impacto dessa matéria para você?</p>", unsafe_allow_html=True)
+                    # INTERATIVIDADE
+                    st.markdown("<p style='color:#475569; font-size:12px; margin-bottom:6px; font-weight:600;'>Qual o impacto dessa matéria?</p>", unsafe_allow_html=True)
                     reacao = st.radio(
                         "Avaliação", 
-                        ["📈 Impacto Alto", "⚠️ Requer Atenção", "🔍 Neutro / Análise"], 
-                        key=f"reacao_{chave_unica}_universal", 
+                        ["📈 Alto", "⚠️ Atenção", "🔍 Neutro"], 
+                        key=f"reacao_{chave_unica}_v3", 
                         horizontal=True, 
                         label_visibility="collapsed"
                     )
                     
-                    # ACORDEÃO DE LEITURA COMPLETA
-                    with st.expander("📝 Expandir Matéria Completa e Contexto"):
-                        resumo_denso = item.get('resumo_longo', item.get('texto_pt', 'O detalhamento completo desta matéria está sendo processado pelas agências integradas.'))
-                        st.markdown(f"<p style='color:#e2e8f0; font-size:16px; font-weight:600; margin-bottom:10px;'>{item.get('titulo_pt', 'Matéria de Capa')}</p>", unsafe_allow_html=True)
-                        st.markdown(f"<p style='color:#94a3b8; font-size:14.5px; line-height:1.6; font-style:italic;'>{resumo_denso}</p>", unsafe_allow_html=True)
-                        st.markdown(f"<div style='margin-top:15px; text-align:right;'><a href='{link_origem}' target='_blank' style='color:#00f5d4; text-decoration:none; font-size:13px; font-weight:700;'>Acessar Fonte Oficial ↗</a></div>", unsafe_allow_html=True)
+                    # EXPANDER SEGURO (Sem hacks de CSS para evitar quebras de texto e sobreposições)
+                    with st.expander("📝 Matéria Completa e Contexto"):
+                        resumo_denso = item.get('resumo_longo', item.get('texto_pt', 'O detalhamento completo desta matéria está sendo processado.'))
+                        st.markdown(f"<p style='color:#0f172a; font-size:15px; font-weight:700; margin-bottom:8px;'>{titulo}</p>", unsafe_allow_html=True)
+                        st.markdown(f"<p style='color:#334155; font-size:14px; line-height:1.6; font-style:italic;'>{resumo_denso}</p>", unsafe_allow_html=True)
+                        st.markdown(f"<div style='margin-top:12px; text-align:right;'><a href='{link_origem}' target='_blank' style='color:#2563eb; text-decoration:none; font-size:13px; font-weight:700;'>Acessar Fonte Oficial ↗</a></div>", unsafe_allow_html=True)
