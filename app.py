@@ -2,7 +2,6 @@ import streamlit as st
 import json
 import urllib.request
 import streamlit.components.v1 as components
-import hashlib
 
 st.set_page_config(
     page_title="horizont.news — Conectando Gerações",
@@ -14,7 +13,7 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         
         * { font-family: 'Inter', sans-serif !important; }
         .block-container { padding-top: 1.5rem !important; padding-bottom: 3rem !important; }
@@ -30,9 +29,10 @@ st.markdown(
         summary::-webkit-details-marker { display: none !important; }
         summary::before { content: "📝 " !important; }
         
-        /* Container de imagem resiliente contra falhas ou links partidos */
-        .container-img-noticia { width: 100%; height: 200px; background-color: #f1f5f9; border-radius: 10px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        /* Container de imagem resiliente e focado na foto real */
+        .container-img-noticia { width: 100%; height: 210px; background-color: #0f172a; border-radius: 10px; margin-bottom: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .img-noticia { width: 100%; height: 100%; object-fit: cover; }
+        .placeholder-logo { color: #00f5d4; font-weight: 800; font-size: 20px; text-align: center; }
 
         /* Box de Afiliados / Cupons Premium */
         .box-afiliado {
@@ -72,62 +72,13 @@ st.markdown(
 )
 
 # TICKER
-st.markdown("<marquee style='width: 100%; color: #0f172a; background-color: #00f5d4; padding: 8px; font-size: 13px; font-weight: 700; border-radius: 8px; margin-bottom: 25px;'>⚡ AGORA NO MUNDO: Cobertura integrada multiplataforma em tempo real direto das principais agências globais...</marquee>", unsafe_allow_html=True)
+st.markdown("<marquee style='width: 100%; color: #0f172a; background-color: #00f5d4; padding: 8px; font-size: 13px; font-weight: 700; border-radius: 8px; margin-bottom: 25px;'>⚡ AGORA NO MUNDO: Cobertura internacional integrada da Ásia, Europa, Américas e Oriente Médio...</marquee>", unsafe_allow_html=True)
 
 noticias = ler_banco_dados_fresco()
 
 def obter_cor_categoria(cat):
     cores = {"Política": "#e11d48", "Economia": "#16a34a", "Cotidiano": "#2563eb", "Esportes": "#ea580c", "Cultura & Pop": "#db2777", "Tech & Ciência": "#7c3aed", "Viver Bem": "#0d9488"}
     return cores.get(cat, "#4b5563")
-
-# REPOSITÓRIO EXPANDIDO COM VÁRIAS OPÇÕES VARIADAS (EVITA A REPETIÇÃO)
-IMAGENS_VARIADAS = {
-    "Economia": [
-        "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=600&auto=format&fit=crop"
-    ],
-    "Esportes": [
-        "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1471295263379-6cd268b4e3e2?w=600&auto=format&fit=crop"
-    ],
-    "Política": [
-        "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=600&auto=format&fit=crop"
-    ],
-    "Tech & Ciência": [
-        "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=600&auto=format&fit=crop"
-    ],
-    "Cultura & Pop": [
-        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop"
-    ],
-    "Cotidiano": [
-        "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=600&auto=format&fit=crop"
-    ]
-}
-
-# LÓGICA DE SELEÇÃO: Usa um hash do título para selecionar a imagem
-def obter_imagem_segura(categoria, titulo):
-    lista_opcoes = IMAGENS_VARIADAS.get(categoria, IMAGENS_VARIADAS["Cotidiano"])
-    # Transforma o título da notícia em um número único para escolher o índice da imagem
-    indice_hash = int(hashlib.md5(titulo.encode('utf-8')).hexdigest(), 16)
-    posicao = indice_hash % len(lista_opcoes)
-    return lista_opcoes[posicao]
-
 
 # MOTOR DE MONETIZAÇÃO
 def obter_oferta_afiliado(categoria):
@@ -194,25 +145,32 @@ else:
             link_origem = item.get("link_origem", "#")
             chave_unica = item.get('id', str(index))
             
-            # AGORA PASSA O TÍTULO PARA GARANTIR ALTERNÂNCIA REAL
+            # CAPTURA DA IMAGEM REAL DO ARTIGO
             url_foto = item.get("url_imagem")
-            if not url_foto or url_foto.strip() == "" or "source.unsplash.com" in url_foto:
-                url_foto = obter_imagem_segura(categoria, titulo)
             
             total_palavras = len(texto.split()) + len(item.get('resumo_longo', '').split())
             tempo_leitura = max(1, round(total_palavras / 150))
             
             cor_tag = obter_cor_categoria(categoria)
+            
+            # Formatação de Tags Dinâmicas (Categoria + Subcategoria Geográfica)
             tag_html = f"<span style='background-color:{cor_tag}; color:white; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase; margin-right:6px;'>{categoria}</span>"
+            if subcategoria:
+                tag_html += f"<span style='background-color:#e2e8f0; color:#475569; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:600; text-transform:uppercase;'>📍 {subcategoria}</span>"
             
             oferta = obter_oferta_afiliado(categoria)
 
             with coluna_atual:
                 with st.container(border=True):
-                    st.markdown(f'<div class="container-img-noticia"><img src="{url_foto}" class="img-noticia" alt="Notícia"></div>', unsafe_allow_html=True)
+                    # EXIBIÇÃO TRATADA: Só usa se a URL contiver uma imagem legítima vinda da fonte externa
+                    if url_foto and url_foto.strip() != "" and "source.unsplash.com" not in url_foto:
+                        st.markdown(f'<div class="container-img-noticia"><img src="{url_foto}" class="img-noticia" alt="Notícia"></div>', unsafe_allow_html=True)
+                    else:
+                        st.markdown(f'<div class="container-img-noticia"><div class="placeholder-logo">🌐 horizont.news</div></div>', unsafe_allow_html=True)
+                        
                     st.markdown(f"<div style='margin-bottom:8px;'>{tag_html}</div>", unsafe_allow_html=True)
                     st.markdown(f"<h3 class='titulo-noticia'>{titulo}</h3>", unsafe_allow_html=True)
-                    st.markdown(f"<p style='color:#64748b; font-size:12px; margin-bottom:12px;'>📅 {item.get('data')} • ⏱️ {tempo_leitura} min • 🏛️ Fonte: <b>{item.get('fonte_origem')}</b></p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:#64748b; font-size:12px; margin-bottom:12px;'>📅 {item.get('data')} • 🏛️ Fonte: <b>{item.get('fonte_origem')}</b></p>", unsafe_allow_html=True)
                     st.markdown(f"<p class='texto-noticia'>{texto}</p>", unsafe_allow_html=True)
                     
                     st.divider()
