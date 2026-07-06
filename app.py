@@ -50,6 +50,9 @@ st.markdown("""
 idioma = st.selectbox("🌎 Idioma Padrão de Leitura", ["Português", "English", "Español"])
 sufixo = {"Português": "pt", "English": "en", "Español": "es"}[idioma]
 
+# Mapeamento dinâmico para a voz do narrador acompanhar o idioma escolhido
+lang_audio = {"Português": "pt-BR", "English": "en-US", "Español": "es-ES"}[idioma]
+
 noticias = ler_banco_dados_fresco()
 
 if not noticias:
@@ -67,7 +70,7 @@ else:
         titulo = item.get(f"titulo_{sufixo}", item.get("titulo_pt", "Sem Título"))
         texto = item.get(f"texto_{sufixo}", item.get("texto_pt", "Sem Conteúdo"))
         
-        # Lê a categoria nova que o robô vai enviar (por enquanto usa Internacional por defeito)
+        # Lê a categoria nova que o robô vai enviar
         categoria = item.get("categoria", "INTERNACIONAL") 
         link_origem = item.get("link_origem", "#")
         chave_unica = item.get('id', str(index))
@@ -81,12 +84,12 @@ else:
                 
                 st.divider()
                 
-                # Botão de Áudio Nativo
+                # Botão de Áudio Nativo Inteligente (Ajusta a voz automaticamente)
                 texto_limpo = texto.replace('"', '').replace("'", "").replace('\n', ' ')
                 titulo_limpo = titulo.replace('"', '').replace("'", "")
                 html_audio = f"""
                 <div style="display: flex; justify-content: center; margin-bottom: 10px;">
-                    <button onclick="window.speechSynthesis.cancel(); var msg = new SpeechSynthesisUtterance('{titulo_limpo}. {texto_limpo}'); msg.lang='pt-BR'; window.speechSynthesis.speak(msg);" 
+                    <button onclick="window.speechSynthesis.cancel(); var msg = new SpeechSynthesisUtterance('{titulo_limpo}. {texto_limpo}'); msg.lang='{lang_audio}'; window.speechSynthesis.speak(msg);" 
                     style="background-color:#003366; color:#ffffff; border: 1px solid #003366; padding: 6px 16px; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: bold;">
                         🔊 Ouvir Notícia
                     </button>
