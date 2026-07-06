@@ -200,5 +200,47 @@
         "texto_en": "By Flávia Viana",
         "titulo_es": "Nuevo musical brasileño transforma el clásico de Shakespeare",
         "texto_es": "Por Flavia Viana"
+    },
+    {
+        "id": 16,
+        "data": "06/07/2026 00:36",
+        "fonte_origem": "Al Jazeera",
+        "categoria": "GEOPOLÍTICA",
+        "link_origem": "https://www.aljazeera.com/news/liveblog/2026/7/6/iran-war-live-tehran-set-for-khameneis-procession-israel-bombs-lebanon?traffic_source=rss",
+        "status": "APROVADO",
+        "titulo_pt": "Guerra do Irã ao vivo: Teerã se prepara para o cortejo fúnebre de Ali Khamenei",
+        "texto_pt": "Milhões de pessoas são esperadas hoje no cortejo fúnebre do líder supremo do Irã assassinado em Teerã.",
+        "titulo_en": "Iran war live: Tehran prepares for Ali Khamenei’s funeral procession",
+        "texto_en": "Millions expected at funeral procession for Iran&#039;s slain supreme leader in Tehran today.",
+        "titulo_es": "Guerra de Irán en vivo: Teherán se prepara para el cortejo fúnebre de Ali Jamenei",
+        "texto_es": "Se esperan millones de personas en la procesión fúnebre del líder supremo asesinado en Teherán hoy."
+    },
+    {
+        "id": 17,
+        "data": "06/07/2026 00:36",
+        "fonte_origem": "Globo Esporte (GE)",
+        "categoria": "ESPORTE",
+        "link_origem": "https://ge.globo.com/futebol/copa-do-mundo/jogo/05-07-2026/mexico-inglaterra.ghtml",
+        "status": "APROVADO",
+        "titulo_pt": "México x Inglaterra - Copa do Mundo 2026 - Ao vivo - globoesporte.com",
+        "texto_pt": "Copa do Mundo 2026 no globoesporte.com - acompanhe tudo sobre México x Inglaterra: escalação, informações sobre o jogo, fotos e muito mais",
+        "titulo_en": "Mexico x England - World Cup 2026 - Live - globoesporte.com",
+        "texto_en": "2026 World Cup on globoesporte.com - follow everything about Mexico x England: lineup, information about the game, photos and much more",
+        "titulo_es": "México x Inglaterra - Mundial 2026 - En Vivo - globoesporte.com",
+        "texto_es": "Mundial 2026 en globoesporte.com - sigue todo sobre México x Inglaterra: alineación, información del partido, fotos y mucho más"
+    },
+    {
+        "id": 18,
+        "data": "06/07/2026 00:36",
+        "fonte_origem": "UOL Esporte",
+        "categoria": "ESPORTE",
+        "link_origem": "https://www.uol.com.br/esporte/futebol/ultimas-noticias/2026/07/05/endrick-lamenta-gol-perdido-em-eliminacao-sei-que-poderia-fazer-melhor.ghtm",
+        "status": "APROVADO",
+        "titulo_pt": "Endrick lamenta gol perdido em eliminação: ?Sei que poderia fazer melhor?",
+        "texto_pt": "Endrick teve a chance de abrir o placar antes da seleção brasileira sofrer dois gols de Haaland contra a Noruega, na eliminação da Copa do Mundo de 2026. O atacante lamentou a oportunidade desperdiçada logo após entrar em campo.",
+        "titulo_en": "Endrick regrets a lost goal in elimination: ?I know I could do better?",
+        "texto_en": "Endrick had the chance to open the scoring before the Brazilian team conceded two goals from Haaland against Norway, in their elimination from the 2026 World Cup. The striker regretted the wasted opportunity shortly after entering the field.",
+        "titulo_es": "Endrick lamenta haber perdido un gol en la eliminación: ?Sé que podría hacerlo mejor?",
+        "texto_es": "Endrick tuvo la oportunidad de abrir el marcador antes de que la selección brasileña encajara dos goles de Haaland ante Noruega, en su eliminación del Mundial de 2026. El delantero lamentó la oportunidad desperdiciada al poco de entrar al campo."
     }
 ]
