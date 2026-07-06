@@ -9,6 +9,20 @@ st.set_page_config(
     layout="wide"
 )
 
+# 1. MÁGICA DO LAYOUT: Remove o espaço em branco no topo e esconde o menu
+st.markdown(
+    """
+    <style>
+        .block-container {
+            padding-top: 1.5rem !important; /* Reduz drasticamente o espaço superior */
+        }
+        #MainMenu {visibility: hidden;} 
+        [data-testid='stSidebar'] {display: none;}
+    </style>
+    """, 
+    unsafe_allow_html=True
+)
+
 URL_BANCO_RAW = "https://raw.githubusercontent.com/horizontpostnews-hue/portal-horizont/refs/heads/main/banco_noticias.json"
 
 @st.cache_data(ttl=60)
@@ -23,34 +37,26 @@ def ler_banco_dados_fresco():
     except Exception as e:
         return []
 
-# Esconde o menu lateral do Streamlit para o público
-st.markdown(
-    "<style>#MainMenu {visibility: hidden;} [data-testid='stSidebar'] {display: none;}</style>", 
-    unsafe_allow_html=True
-)
-
-# Cabeçalho Premium com as novas cores
+# 2. CABEÇALHO COMPACTO: Padding reduzido de 25px para 12px
 st.markdown(
     """
-    <div style="background-color:#003366; padding:25px; border-radius:12px; margin-bottom:15px; text-align:center; border: 1px solid #1e293b;">
-        <h1 style="color:#ffffff; margin:0; font-family: 'Helvetica Neue', sans-serif; letter-spacing: 1px;">🌐 horizont.news</h1>
-        <p style="color:#66b3ff; font-size:15px; margin:5px 0 0 0; font-weight:500;">Feed Internacional Geopolítico em Tempo Real</p>
+    <div style="background-color:#003366; padding:12px 20px; border-radius:10px; margin-bottom:15px; text-align:center; border: 1px solid #1e293b;">
+        <h1 style="color:#ffffff; margin:0; font-family: 'Helvetica Neue', sans-serif; letter-spacing: 1px; font-size: 28px;">🌐 horizont.news</h1>
+        <p style="color:#66b3ff; font-size:13px; margin:2px 0 0 0; font-weight:500;">Feed Internacional Geopolítico em Tempo Real</p>
     </div>
     """, 
     unsafe_allow_html=True
 )
 
-# 1. TICKER DE NOTÍCIAS (Barra Rolante)
+# TICKER DE NOTÍCIAS (Barra Rolante)
 st.markdown("""
-<marquee style='width: 100%; color: #FFFFFF; background-color: #2C3E50; padding: 10px; font-family: sans-serif; font-weight: bold; border-radius: 5px; margin-bottom: 25px;'>
+<marquee style='width: 100%; color: #FFFFFF; background-color: #2C3E50; padding: 8px; font-family: sans-serif; font-size: 14px; font-weight: bold; border-radius: 5px; margin-bottom: 20px;'>
     🔴 ÚLTIMAS ATUALIZAÇÕES: As principais notícias de Geopolítica, Economia e Mundo em Tempo Real direto das agências internacionais...
 </marquee>
 """, unsafe_allow_html=True)
 
 idioma = st.selectbox("🌎 Idioma Padrão de Leitura", ["Português", "English", "Español"])
 sufixo = {"Português": "pt", "English": "en", "Español": "es"}[idioma]
-
-# Mapeamento dinâmico para a voz do narrador acompanhar o idioma escolhido
 lang_audio = {"Português": "pt-BR", "English": "en-US", "Español": "es-ES"}[idioma]
 
 noticias = ler_banco_dados_fresco()
@@ -60,17 +66,13 @@ if not noticias:
 else:
     noticias_recentes = list(reversed(noticias))
     
-    # 2. ORGANIZANDO O LAYOUT EM 2 COLUNAS
     col1, col2 = st.columns(2)
     
     for index, item in enumerate(noticias_recentes):
-        # A lógica alterna as notícias: uma vai para a esquerda, a seguinte para a direita
         coluna_atual = col1 if index % 2 == 0 else col2
         
         titulo = item.get(f"titulo_{sufixo}", item.get("titulo_pt", "Sem Título"))
         texto = item.get(f"texto_{sufixo}", item.get("texto_pt", "Sem Conteúdo"))
-        
-        # Lê a categoria nova que o robô vai enviar
         categoria = item.get("categoria", "INTERNACIONAL") 
         link_origem = item.get("link_origem", "#")
         chave_unica = item.get('id', str(index))
@@ -84,7 +86,6 @@ else:
                 
                 st.divider()
                 
-                # Botão de Áudio Nativo Inteligente (Ajusta a voz automaticamente)
                 texto_limpo = texto.replace('"', '').replace("'", "").replace('\n', ' ')
                 titulo_limpo = titulo.replace('"', '').replace("'", "")
                 html_audio = f"""
@@ -101,7 +102,6 @@ else:
                 """
                 components.html(html_audio, height=45)
                 
-                # 3. NOVAS REAÇÕES ANALÍTICAS
                 st.caption("Avaliação Geopolítica / Mercado:")
                 reacao = st.radio(
                     "Avaliação", 
@@ -111,8 +111,11 @@ else:
                     label_visibility="collapsed"
                 )
                 
-                # Caixa Sanfona da Fonte Original
-                with st.expander("🇧🇷 Versão e Fonte Original"):
+                # 3. NOVO EXPANDER DE RESUMO DETALHADO
+                with st.expander("📝 Resumo Expandido e Fonte"):
+                    # O site tenta ler o "resumo_longo". Se o robô não tiver enviado, ele exibe uma mensagem padrão.
+                    resumo_denso = item.get('resumo_longo', item.get('texto_pt', 'O resumo estendido para esta matéria ainda está sendo processado pela nossa IA.'))
+                    
                     st.markdown(f"**{item.get('titulo_pt', 'Indisponível')}**")
-                    st.markdown(item.get('texto_pt', 'Indisponível'))
-                    st.markdown(f"**[🔗 Acessar matéria na agência original (Link Externo)]({link_origem})**")
+                    st.markdown(f"*{resumo_denso}*")
+                    st.markdown(f"**[🔗 Acessar matéria completa na agência (Link Externo)]({link_origem})**")
