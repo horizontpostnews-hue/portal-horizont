@@ -2,7 +2,7 @@ import streamlit as st
 import json
 import urllib.request
 import streamlit.components.v1 as components
-import hashlib
+import random
 
 st.set_page_config(
     page_title="horizont.news — Conectando Gerações",
@@ -60,13 +60,20 @@ st.markdown(
         summary::-webkit-details-marker { display: none !important; }
         summary::before { content: "📝 " !important; }
         
-        .img-noticia {
+        /* Container de imagem resiliente contra falhas ou links partidos */
+        .container-img-noticia {
             width: 100%;
             height: 200px;
-            object-fit: cover;
+            background-color: #f1f5f9;
             border-radius: 10px;
             margin-bottom: 10px;
+            overflow: hidden;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .img-noticia {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
     </style>
     """, 
@@ -87,7 +94,7 @@ def ler_banco_dados_fresco():
     except Exception as e:
         return []
 
-# IDENTIDADE VISUAL (HEADER)
+# IDENTIDADE VISUAL DO PORTAL (HEADER)
 st.markdown(
     """
     <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:25px; border-radius:14px; margin-bottom:20px; text-align:center; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
@@ -116,25 +123,47 @@ def obter_cor_categoria(cat):
     }
     return cores.get(cat, "#4b5563")
 
-# GERA IMAGENS DINÂMICAS E EXCLUSIVAS POR NOTÍCIA
-def obter_imagem_exclusiva(titulo, categoria, chave_unica):
-    # Dicionário de termos em inglês para a API do Unsplash funcionar perfeitamente
-    termos_busca = {
-        "Economia": "finance,market",
-        "Esportes": "sports,stadium",
-        "Política": "government,politics",
-        "Tech & Ciência": "technology,science",
-        "Cultura & Pop": "popculture,concert",
-        "Cotidiano": "city,lifestyle",
-        "Viver Bem": "wellness,health"
-    }
-    termo = termos_busca.get(categoria, "news")
-    
-    # Gera um identificador numérico baseado no ID ou Título para anexar à URL.
-    # Isso força o Unsplash a retornar uma imagem única da coleção para este card específico.
-    semente_numerica = int(hashlib.md5(chave_unica.encode('utf-8')).hexdigest(), 16) % 1000
-    
-    return f"https://source.unsplash.com/featured/600x400/?{termo}&sig={semente_numerica}"
+# REPOSITÓRIO SEGURO DE IMAGENS DE ALTA RESOLUÇÃO E CONTEÚDO RELEVANTE (LIVRE DE REPETIÇÕES)
+# Usando imagens estáticas e verificadas do Unsplash direto da CDN estável (evita links mortos)
+IMAGENS_VARIADAS = {
+    "Economia": [
+        "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&auto=format&fit=crop"
+    ],
+    "Esportes": [
+        "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600&auto=format&fit=crop"
+    ],
+    "Política": [
+        "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=600&auto=format&fit=crop"
+    ],
+    "Tech & Ciência": [
+        "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=600&auto=format&fit=crop"
+    ],
+    "Cultura & Pop": [
+        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=600&auto=format&fit=crop"
+    ],
+    "Cotidiano": [
+        "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&auto=format&fit=crop"
+    ]
+}
+
+def obter_imagem_segura(categoria, index):
+    # Seleciona uma imagem baseada estritamente no índice numérico do loop
+    # Isso impede que matérias vizinhas fiquem com a mesma imagem, eliminando o estranhamento visual
+    lista_opcoes = IMAGENS_VARIADAS.get(categoria, IMAGENS_VARIADAS["Cotidiano"])
+    posicao = index % len(lista_opcoes)
+    return lista_opcoes[posicao]
 
 if not noticias:
     st.info("📢 Sincronizando feeds mundiais. A sua janela para o planeta está carregando...")
@@ -184,10 +213,11 @@ else:
             link_origem = item.get("link_origem", "#")
             chave_unica = item.get('id', str(index))
             
-            # SOLUÇÃO DA REPETIÇÃO: Usa a imagem do JSON se houver; se não houver, gera uma randômica por notícia
+            # RESOLUÇÃO DAS IMAGENS: Usa a imagem específica se existir no banco, 
+            # senão puxa do nosso dicionário controlado indexado por posição (Garante diversidade sem quebras)
             url_foto = item.get("url_imagem")
-            if not url_foto or url_foto.strip() == "":
-                url_foto = obter_imagem_exclusiva(titulo, categoria, chave_unica)
+            if not url_foto or url_foto.strip() == "" or "source.unsplash.com" in url_foto:
+                url_foto = obter_imagem_segura(categoria, index)
             
             total_palavras = len(texto.split()) + len(item.get('resumo_longo', '').split())
             tempo_leitura = max(1, round(total_palavras / 150))
@@ -199,8 +229,11 @@ else:
 
             with coluna_atual:
                 with st.container(border=True):
-                    # Imagem Exclusiva Tratada
-                    st.markdown(f'<img src="{url_foto}" class="img-noticia" alt="Imagem da notícia">', unsafe_allow_html=True)
+                    # Bloco de exibição de Imagem Controlada
+                    st.markdown(
+                        f'<div class="container-img-noticia"><img src="{url_foto}" class="img-noticia" alt="Notícia"></div>', 
+                        unsafe_allow_html=True
+                    )
                     
                     # Tags Editoriais
                     st.markdown(f"<div style='margin-bottom:8px;'>{tag_html}</div>", unsafe_allow_html=True)
@@ -235,7 +268,7 @@ else:
                     
                     # Interação
                     st.markdown("<p style='color:#475569; font-size:12px; margin-bottom:6px; font-weight:600;'>Qual o impacto dessa matéria?</p>", unsafe_allow_html=True)
-                    reacao = st.radio("Avaliação", ["📈 Alto", "⚠️ Atenção", "🔍 Neutro"], key=f"reacao_{chave_unica}_v6", horizontal=True, label_visibility="collapsed")
+                    reacao = st.radio("Avaliação", ["📈 Alto", "⚠️ Atenção", "🔍 Neutro"], key=f"reacao_{chave_unica}_v7", horizontal=True, label_visibility="collapsed")
                     
                     # Acordeão Seguro
                     resumo_denso = item.get('resumo_longo', item.get('texto_pt', 'O detalhamento completo desta matéria está sendo processado.'))
