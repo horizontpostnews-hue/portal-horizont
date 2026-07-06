@@ -2,6 +2,8 @@ import os
 import json
 import feedparser
 import re
+import requests
+from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
 from datetime import datetime
 
@@ -46,11 +48,40 @@ def limpar_html(texto):
     # Remove tags HTML de links ou imagens que possam vir sujas no resumo
     return re.sub('<[^<]+?>', '', str(texto)).strip()
 
-def traduzir_noticia(titulo_org, texto_org):
+def extrair_resumo_longo(url_da_noticia):
+    """Entra no link original e raspa os primeiros 800 caracteres do texto."""
+    try:
+        # Disfarça o robô de navegador humano para evitar bloqueios das agências
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        resposta = requests.get(url_da_noticia, headers=headers, timeout=15)
+        
+        # Transforma o site num formato que o Python consegue ler
+        sopa = BeautifulSoup(resposta.content, 'html.parser')
+        
+        # Pega todos os blocos de texto (parágrafos)
+        paragrafos = sopa.find_all('p')
+        
+        # Junta tudo num texto só
+        texto_completo = " ".join([p.get_text().strip() for p in paragrafos])
+        
+        # Limpa espaços em branco duplicados e corta nos 800 caracteres
+        texto_limpo = " ".join(texto_completo.split())
+        resumo_final = texto_limpo[:800]
+        
+        if len(resumo_final) < 50:
+            return "Resumo longo indisponível para o layout desta fonte."
+            
+        return resumo_final + "..."
+        
+    except Exception as e:
+        return "Instabilidade ao acessar a matéria completa na fonte original."
+
+def traduzir_noticia(titulo_org, texto_org, resumo_longo_org):
     try:
         # PROTEÇÃO 1: Evita que o tradutor trave se a notícia não tiver texto
         if not titulo_org: titulo_org = "Sem título"
         if not texto_org: texto_org = "Sem descrição disponível."
+        if not resumo_longo_org: resumo_longo_org = "Sem resumo detalhado disponível."
         
         # PROTEÇÃO 2: 'auto' permite ler tanto fontes em PT quanto em EN sem misturar tudo
         tradutor_pt = GoogleTranslator(source='auto', target='pt')
@@ -59,6 +90,9 @@ def traduzir_noticia(titulo_org, texto_org):
         
         titulo_pt = tradutor_pt.translate(titulo_org)
         texto_pt = tradutor_pt.translate(texto_org)
+        
+        # Traduz o texto longo raspado do site original para o Português
+        resumo_pt = tradutor_pt.translate(resumo_longo_org)
         
         titulo_es = tradutor_es.translate(titulo_org)
         texto_es = tradutor_es.translate(texto_org)
@@ -69,7 +103,8 @@ def traduzir_noticia(titulo_org, texto_org):
         return {
             "titulo_pt": titulo_pt, "texto_pt": texto_pt,
             "titulo_en": titulo_en, "texto_en": texto_en,
-            "titulo_es": titulo_es, "texto_es": texto_es
+            "titulo_es": titulo_es, "texto_es": texto_es,
+            "resumo_longo": resumo_pt # <--- Salva o super resumo no banco!
         }
     except Exception as e:
         print(f"Erro no tradutor: {e}")
@@ -77,7 +112,8 @@ def traduzir_noticia(titulo_org, texto_org):
         return {
             "titulo_pt": f"⚠️ [Erro na Tradução] {titulo_org}", "texto_pt": str(e),
             "titulo_en": f"⚠️ [Translation Error] {titulo_org}", "texto_en": str(e),
-            "titulo_es": f"⚠️ [Error de Traducción] {titulo_org}", "texto_es": str(e)
+            "titulo_es": f"⚠️ [Error de Traducción] {titulo_org}", "texto_es": str(e),
+            "resumo_longo": resumo_longo_org
         }
 
 def rodar_robo():
@@ -107,7 +143,12 @@ def rodar_robo():
                 texto_original = limpar_html(resumo_cru)
                 
                 print(f"Processando: {nome_fonte} | {categoria}...")
-                dados_traduzidos = traduzir_noticia(titulo_original, texto_original)
+                
+                # O robô entra na matéria original e raspa o texto
+                texto_denso = extrair_resumo_longo(link)
+                
+                # Passamos o título, o lide e o texto denso para o tradutor
+                dados_traduzidos = traduzir_noticia(titulo_original, texto_original, texto_denso)
                 
                 item_noticia = {
                     "id": len(banco_atual) + len(novas_noticias) + 1,
