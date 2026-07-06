@@ -9,7 +9,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# 1. MÁGICA DO LAYOUT: Remove o espaço em branco no topo e esconde o menu
 st.markdown(
     """
     <style>
@@ -37,7 +36,6 @@ def ler_banco_dados_fresco():
     except Exception as e:
         return []
 
-# CABEÇALHO COMPACTO
 st.markdown(
     """
     <div style="background-color:#003366; padding:12px 20px; border-radius:10px; margin-bottom:15px; text-align:center; border: 1px solid #1e293b;">
@@ -48,7 +46,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# TICKER DE NOTÍCIAS (Barra Rolante)
 st.markdown("""
 <marquee style='width: 100%; color: #FFFFFF; background-color: #2C3E50; padding: 8px; font-family: sans-serif; font-size: 14px; font-weight: bold; border-radius: 5px; margin-bottom: 20px;'>
     🔴 ÚLTIMAS ATUALIZAÇÕES: As principais notícias de Geopolítica, Economia e Mundo em Tempo Real direto das agências internacionais...
@@ -60,7 +57,7 @@ noticias = ler_banco_dados_fresco()
 if not noticias:
     st.info("📢 Atualizando a central de notícias mundiais. Volte em instantes!")
 else:
-    # 2. CONTROLES SUPERIORES: Divididos em duas colunas para o Celular
+    # 1. LINHA DE CONTROLES PRINCIPAIS
     col_lang, col_filtro = st.columns(2)
 
     with col_lang:
@@ -68,22 +65,36 @@ else:
         sufixo = {"Português": "pt", "English": "en", "Español": "es"}[idioma]
         lang_audio = {"Português": "pt-BR", "English": "en-US", "Español": "es-ES"}[idioma]
 
-    # Extrai todas as categorias únicas que existem no banco de forma automática
     categorias_dinamicas = sorted(list(set(item.get("categoria", "INTERNACIONAL") for item in noticias)))
     opcoes_filtro = ["Todas as Categorias"] + categorias_dinamicas
     
     with col_filtro:
         categoria_selecionada = st.selectbox("🎯 Filtrar por Assunto", opcoes_filtro)
 
-    # Inverte a lista para mostrar as mais novas primeiro
+    sub_selecionada = "Todas as Subcategorias"
+    
+    # 2. FILTRO SECUNDÁRIO (Subcategorias - Só aparece se uma Categoria for selecionada)
+    if categoria_selecionada != "Todas as Categorias":
+        subcategorias_dinamicas = sorted(list(set(
+            item.get("subcategoria", "") for item in noticias 
+            if item.get("categoria") == categoria_selecionada and item.get("subcategoria")
+        )))
+        
+        if subcategorias_dinamicas:
+            # Cria uma caixa de seleção estilizada para não poluir
+            sub_selecionada = st.selectbox(f"🏷️ Refinar {categoria_selecionada}", ["Todas as Subcategorias"] + subcategorias_dinamicas)
+
+    # 3. MOTOR DE BUSCA (Aplica os filtros)
     noticias_recentes = list(reversed(noticias))
     
-    # 3. MOTOR DO FILTRO: Remove o que não é da categoria selecionada
     if categoria_selecionada != "Todas as Categorias":
         noticias_recentes = [n for n in noticias_recentes if n.get("categoria", "INTERNACIONAL") == categoria_selecionada]
+        
+        if sub_selecionada != "Todas as Subcategorias":
+            noticias_recentes = [n for n in noticias_recentes if n.get("subcategoria", "") == sub_selecionada]
     
     if not noticias_recentes:
-        st.warning(f"Nenhuma notícia encontrada para a categoria: {categoria_selecionada} no momento.")
+        st.warning(f"Nenhuma notícia encontrada com estes filtros no momento.")
     else:
         col1, col2 = st.columns(2)
         
@@ -92,13 +103,21 @@ else:
             
             titulo = item.get(f"titulo_{sufixo}", item.get("titulo_pt", "Sem Título"))
             texto = item.get(f"texto_{sufixo}", item.get("texto_pt", "Sem Conteúdo"))
+            
+            # Puxa a categoria e a subcategoria
             categoria = item.get("categoria", "INTERNACIONAL") 
+            subcategoria = item.get("subcategoria", "")
+            
+            # Formata a tag visual para o leitor
+            tag_visual = f"{categoria.upper()} ❯ {subcategoria}" if subcategoria else f"{categoria.upper()}"
+            
             link_origem = item.get("link_origem", "#")
             chave_unica = item.get('id', str(index))
             
             with coluna_atual:
                 with st.container(border=True):
-                    st.caption(f"**📌 {categoria.upper()}** | 🏛️ Fonte: {item.get('fonte_origem')}")
+                    # Agora a Subcategoria aparece brilhando aqui em cima!
+                    st.caption(f"**📌 {tag_visual}** | 🏛️ Fonte: {item.get('fonte_origem')}")
                     st.subheader(titulo)
                     st.caption(f"📅 {item.get('data')}")
                     st.markdown(texto)
@@ -125,7 +144,7 @@ else:
                     reacao = st.radio(
                         "Avaliação", 
                         ["📈 Alta Relevância", "⚠️ Tensão", "🔍 Exige Análise"], 
-                        key=f"reacao_{chave_unica}_{categoria_selecionada}", # Chave ajustada para não dar conflito no filtro
+                        key=f"reacao_{chave_unica}_sub", 
                         horizontal=True, 
                         label_visibility="collapsed"
                     )
