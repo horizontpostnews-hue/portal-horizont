@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ESTILIZAÇÃO DO PORTAL (CORRIGIDA PARA ALINHAMENTO E ÁUDIO LIMPO)
+# ESTILIZAÇÃO DO PORTAL (OTIMIZADA PARA ELIMINAR SCROLLBARS INDESEJADAS)
 st.markdown(
     """
     <style>
@@ -25,6 +25,7 @@ st.markdown(
             flex-direction: column !important;
             height: 100% !important;
             justify-content: space-between !important;
+            overflow: hidden !important; /* Remove qualquer scrollbar do card */
         }
 
         /* Limitar o tamanho do bloco de texto superior para alinhar as colunas */
@@ -81,7 +82,15 @@ st.markdown(
             color: #14532d;
         }
 
-        /* Botão de Áudio Nativo sem Iframe (Blindado contra quebras e barras cinzas) */
+        /* Botão de Áudio Nativo Otimizado (Sem vazamento de tamanho) */
+        .btn-audio-container {
+            width: 100% !important;
+            overflow: hidden !important;
+            display: block !important;
+            margin-top: 5px !important;
+            margin-bottom: 5px !important;
+        }
+        
         .btn-audio-player {
             background-color: #0f172a !important; 
             color: #00f5d4 !important; 
@@ -96,7 +105,7 @@ st.markdown(
             display: block !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
             text-decoration: none !important;
-            margin-top: 10px !important;
+            box-sizing: border-box !important; /* Garante que padding não aumente o botão */
         }
         .btn-audio-player:hover {
             background-color: #1e293b !important;
@@ -239,14 +248,16 @@ else:
                     st.markdown(f"<p class='texto-noticia'>{texto}</p>", unsafe_allow_html=True)
                     st.divider()
                     
-                    # CORREÇÃO DO ÁUDIO: Executado de forma nativa por um botão inline sem gerar um Iframe quadrado cinza
+                    # CORREÇÃO DO ÁUDIO: Adicionado contêiner para blindar tamanho e overflow
                     texto_limpo = str(texto).replace('"', '&quot;').replace("'", "\\'").replace('\n', ' ')
                     titulo_limpo = str(titulo).replace('"', '&quot;').replace("'", "\\'")
                     
                     html_audio_direto = f"""
-                    <button class="btn-audio-player" onclick="window.speechSynthesis.cancel(); var msg = new SpeechSynthesisUtterance('{titulo_limpo}. {texto_limpo}'); msg.lang='{lang_audio}'; window.speechSynthesis.speak(msg);">
-                        🔊 Ouvir Matéria em Áudio
-                    </button>
+                    <div class="btn-audio-container">
+                        <button class="btn-audio-player" onclick="window.speechSynthesis.cancel(); var msg = new SpeechSynthesisUtterance('{titulo_limpo}. {texto_limpo}'); msg.lang='{lang_audio}'; window.speechSynthesis.speak(msg);">
+                            🔊 Ouvir Matéria em Áudio
+                        </button>
+                    </div>
                     """
                     st.markdown(html_audio_direto, unsafe_allow_html=True)
                     
