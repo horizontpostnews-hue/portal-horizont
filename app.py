@@ -14,7 +14,7 @@ st.markdown(
     """
     <style>
         .block-container {
-            padding-top: 1.5rem !important; /* Reduz drasticamente o espaço superior */
+            padding-top: 1.5rem !important;
         }
         #MainMenu {visibility: hidden;} 
         [data-testid='stSidebar'] {display: none;}
@@ -37,7 +37,7 @@ def ler_banco_dados_fresco():
     except Exception as e:
         return []
 
-# 2. CABEÇALHO COMPACTO: Padding reduzido de 25px para 12px
+# CABEÇALHO COMPACTO
 st.markdown(
     """
     <div style="background-color:#003366; padding:12px 20px; border-radius:10px; margin-bottom:15px; text-align:center; border: 1px solid #1e293b;">
@@ -55,67 +55,84 @@ st.markdown("""
 </marquee>
 """, unsafe_allow_html=True)
 
-idioma = st.selectbox("🌎 Idioma Padrão de Leitura", ["Português", "English", "Español"])
-sufixo = {"Português": "pt", "English": "en", "Español": "es"}[idioma]
-lang_audio = {"Português": "pt-BR", "English": "en-US", "Español": "es-ES"}[idioma]
-
 noticias = ler_banco_dados_fresco()
 
 if not noticias:
     st.info("📢 Atualizando a central de notícias mundiais. Volte em instantes!")
 else:
+    # 2. CONTROLES SUPERIORES: Divididos em duas colunas para o Celular
+    col_lang, col_filtro = st.columns(2)
+
+    with col_lang:
+        idioma = st.selectbox("🌎 Idioma Padrão", ["Português", "English", "Español"])
+        sufixo = {"Português": "pt", "English": "en", "Español": "es"}[idioma]
+        lang_audio = {"Português": "pt-BR", "English": "en-US", "Español": "es-ES"}[idioma]
+
+    # Extrai todas as categorias únicas que existem no banco de forma automática
+    categorias_dinamicas = sorted(list(set(item.get("categoria", "INTERNACIONAL") for item in noticias)))
+    opcoes_filtro = ["Todas as Categorias"] + categorias_dinamicas
+    
+    with col_filtro:
+        categoria_selecionada = st.selectbox("🎯 Filtrar por Assunto", opcoes_filtro)
+
+    # Inverte a lista para mostrar as mais novas primeiro
     noticias_recentes = list(reversed(noticias))
     
-    col1, col2 = st.columns(2)
+    # 3. MOTOR DO FILTRO: Remove o que não é da categoria selecionada
+    if categoria_selecionada != "Todas as Categorias":
+        noticias_recentes = [n for n in noticias_recentes if n.get("categoria", "INTERNACIONAL") == categoria_selecionada]
     
-    for index, item in enumerate(noticias_recentes):
-        coluna_atual = col1 if index % 2 == 0 else col2
+    if not noticias_recentes:
+        st.warning(f"Nenhuma notícia encontrada para a categoria: {categoria_selecionada} no momento.")
+    else:
+        col1, col2 = st.columns(2)
         
-        titulo = item.get(f"titulo_{sufixo}", item.get("titulo_pt", "Sem Título"))
-        texto = item.get(f"texto_{sufixo}", item.get("texto_pt", "Sem Conteúdo"))
-        categoria = item.get("categoria", "INTERNACIONAL") 
-        link_origem = item.get("link_origem", "#")
-        chave_unica = item.get('id', str(index))
-        
-        with coluna_atual:
-            with st.container(border=True):
-                st.caption(f"**📌 {categoria.upper()}** | 🏛️ Fonte: {item.get('fonte_origem')}")
-                st.subheader(titulo)
-                st.caption(f"📅 {item.get('data')}")
-                st.markdown(texto)
-                
-                st.divider()
-                
-                texto_limpo = texto.replace('"', '').replace("'", "").replace('\n', ' ')
-                titulo_limpo = titulo.replace('"', '').replace("'", "")
-                html_audio = f"""
-                <div style="display: flex; justify-content: center; margin-bottom: 10px;">
-                    <button onclick="window.speechSynthesis.cancel(); var msg = new SpeechSynthesisUtterance('{titulo_limpo}. {texto_limpo}'); msg.lang='{lang_audio}'; window.speechSynthesis.speak(msg);" 
-                    style="background-color:#003366; color:#ffffff; border: 1px solid #003366; padding: 6px 16px; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: bold;">
-                        🔊 Ouvir Notícia
-                    </button>
-                    <button onclick="window.speechSynthesis.cancel();" 
-                    style="background-color:transparent; color:#ef4444; border: none; margin-left: 10px; cursor: pointer; font-size: 14px;">
-                        ⏹️ Parar
-                    </button>
-                </div>
-                """
-                components.html(html_audio, height=45)
-                
-                st.caption("Avaliação Geopolítica / Mercado:")
-                reacao = st.radio(
-                    "Avaliação", 
-                    ["📈 Alta Relevância", "⚠️ Tensão", "🔍 Exige Análise"], 
-                    key=f"reacao_{chave_unica}", 
-                    horizontal=True, 
-                    label_visibility="collapsed"
-                )
-                
-                # 3. NOVO EXPANDER DE RESUMO DETALHADO
-                with st.expander("📝 Resumo Expandido e Fonte"):
-                    # O site tenta ler o "resumo_longo". Se o robô não tiver enviado, ele exibe uma mensagem padrão.
-                    resumo_denso = item.get('resumo_longo', item.get('texto_pt', 'O resumo estendido para esta matéria ainda está sendo processado pela nossa IA.'))
+        for index, item in enumerate(noticias_recentes):
+            coluna_atual = col1 if index % 2 == 0 else col2
+            
+            titulo = item.get(f"titulo_{sufixo}", item.get("titulo_pt", "Sem Título"))
+            texto = item.get(f"texto_{sufixo}", item.get("texto_pt", "Sem Conteúdo"))
+            categoria = item.get("categoria", "INTERNACIONAL") 
+            link_origem = item.get("link_origem", "#")
+            chave_unica = item.get('id', str(index))
+            
+            with coluna_atual:
+                with st.container(border=True):
+                    st.caption(f"**📌 {categoria.upper()}** | 🏛️ Fonte: {item.get('fonte_origem')}")
+                    st.subheader(titulo)
+                    st.caption(f"📅 {item.get('data')}")
+                    st.markdown(texto)
                     
-                    st.markdown(f"**{item.get('titulo_pt', 'Indisponível')}**")
-                    st.markdown(f"*{resumo_denso}*")
-                    st.markdown(f"**[🔗 Acessar matéria completa na agência (Link Externo)]({link_origem})**")
+                    st.divider()
+                    
+                    texto_limpo = texto.replace('"', '').replace("'", "").replace('\n', ' ')
+                    titulo_limpo = titulo.replace('"', '').replace("'", "")
+                    html_audio = f"""
+                    <div style="display: flex; justify-content: center; margin-bottom: 10px;">
+                        <button onclick="window.speechSynthesis.cancel(); var msg = new SpeechSynthesisUtterance('{titulo_limpo}. {texto_limpo}'); msg.lang='{lang_audio}'; window.speechSynthesis.speak(msg);" 
+                        style="background-color:#003366; color:#ffffff; border: 1px solid #003366; padding: 6px 16px; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: bold;">
+                            🔊 Ouvir Notícia
+                        </button>
+                        <button onclick="window.speechSynthesis.cancel();" 
+                        style="background-color:transparent; color:#ef4444; border: none; margin-left: 10px; cursor: pointer; font-size: 14px;">
+                            ⏹️ Parar
+                        </button>
+                    </div>
+                    """
+                    components.html(html_audio, height=45)
+                    
+                    st.caption("Avaliação Geopolítica / Mercado:")
+                    reacao = st.radio(
+                        "Avaliação", 
+                        ["📈 Alta Relevância", "⚠️ Tensão", "🔍 Exige Análise"], 
+                        key=f"reacao_{chave_unica}_{categoria_selecionada}", # Chave ajustada para não dar conflito no filtro
+                        horizontal=True, 
+                        label_visibility="collapsed"
+                    )
+                    
+                    with st.expander("📝 Resumo Expandido e Fonte"):
+                        resumo_denso = item.get('resumo_longo', item.get('texto_pt', 'O resumo estendido para esta matéria ainda está sendo processado pela nossa IA.'))
+                        
+                        st.markdown(f"**{item.get('titulo_pt', 'Indisponível')}**")
+                        st.markdown(f"*{resumo_denso}*")
+                        st.markdown(f"**[🔗 Acessar matéria completa na agência (Link Externo)]({link_origem})**")
