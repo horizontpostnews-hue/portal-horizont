@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# AJUSTES DE UX: Focado em legibilidade máxima e correção de bugs visuais
+# ESTILIZAÇÃO DO PORTAL: Foco total em contraste e legibilidade universal
 st.markdown(
     """
     <style>
@@ -24,7 +24,7 @@ st.markdown(
         #MainMenu {visibility: hidden;} 
         [data-testid='stSidebar'] {display: none;}
         
-        /* Força o texto das notícias a ter alto contraste (Preto/Grafite escuro) */
+        /* Força o texto das notícias a ter alto contraste (Grafite bem escuro) */
         .texto-noticia {
             color: #1e293b !important;
             font-size: 15px !important;
@@ -32,10 +32,36 @@ st.markdown(
             font-weight: 400 !important;
         }
         
-        /* Título das notícias em destaque */
+        /* Título das notícias */
         .titulo-noticia {
             color: #0f172a !important;
             font-weight: 700 !important;
+            font-size: 20px !important;
+            line-height: 1.3 !important;
+            margin-top: 5px !important;
+            margin-bottom: 5px !important;
+        }
+
+        /* Estilização Premium do Acordeão HTML (Substituto do Expander com Bug) */
+        details {
+            background-color: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            padding: 10px 14px !important;
+            margin-top: 15px !important;
+        }
+        summary {
+            font-weight: 600 !important;
+            color: #0f172a !important;
+            cursor: pointer !important;
+            font-size: 14px !important;
+            list-style: none !important; /* Remove seta padrão em alguns navegadores */
+        }
+        summary::-webkit-details-marker {
+            display: none !important; /* Remove seta padrão no Chrome/Safari/iOS */
+        }
+        summary::before {
+            content: "📝 " !important;
         }
     </style>
     """, 
@@ -72,7 +98,7 @@ st.markdown(
 # TICKER
 st.markdown("""
 <marquee style='width: 100%; color: #0f172a; background-color: #00f5d4; padding: 8px; font-size: 13px; font-weight: 700; border-radius: 8px; margin-bottom: 25px;'>
-    ⚡ AGORA NO MUNDO: Cobertura integrada multiplataforma • Geopolítica, Economia, Cotidiano, Tendências Pop e Inovação Tecnológica em tempo real direto das agências globais...
+    ⚡ AGORA NO MUNDO: Cobertura integrada multiplataforma • Geopolítica, Economia, Cotidiano, Tendências Pop e Inovação Tecnológica em tempo real direto das principais agências globais...
 </marquee>
 """, unsafe_allow_html=True)
 
@@ -143,22 +169,22 @@ else:
             tempo_leitura = max(1, round(total_palavras / 150))
             
             cor_tag = obter_cor_categoria(categoria)
-            tag_html = f"<span style='background-color:{cor_tag}; color:white; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase; margin-right:6px;'>{categoria}</span>"
+            tag_html = f"<span style='background-color:{cor_tag}; color:white; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase; margin-right:6px;'>{categoria}</span>"
             if subcategoria:
-                tag_html += f"<span style='background-color:#f1f5f9; color:#475569; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; border: 1px solid #e2e8f0;'>{subcategoria}</span>"
+                tag_html += f"<span style='background-color:#f1f5f9; color:#475569; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:600; border: 1px solid #e2e8f0;'>{subcategoria}</span>"
 
             with coluna_atual:
                 with st.container(border=True):
                     # Tags Editoriais
-                    st.markdown(f"<div style='margin-bottom:10px;'>{tag_html}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='margin-bottom:8px;'>{tag_html}</div>", unsafe_allow_html=True)
                     
                     # Título com Classe de Cor Escura Fixa
                     st.markdown(f"<h3 class='titulo-noticia'>{titulo}</h3>", unsafe_allow_html=True)
                     
                     # Metadados
-                    st.markdown(f"<p style='color:#64748b; font-size:12px; margin-top:4px; margin-bottom:12px;'>📅 {item.get('data')} • ⏱️ {tempo_leitura} min • 🏛️ {item.get('fonte_origem')}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:#64748b; font-size:12px; margin-top:2px; margin-bottom:12px;'>📅 {item.get('data')} • ⏱️ {tempo_leitura} min • 🏛️ {item.get('fonte_origem')}</p>", unsafe_allow_html=True)
                     
-                    # TEXTO DA NOTÍCIA (Alto Contraste e Leitura Confortável)
+                    # TEXTO DA NOTÍCIA (Alto Contraste)
                     st.markdown(f"<p class='texto-noticia'>{texto}</p>", unsafe_allow_html=True)
                     
                     st.divider()
@@ -180,19 +206,29 @@ else:
                     """
                     components.html(html_audio, height=42)
                     
-                    # INTERATIVIDADE
+                    # INTERATIVIDADE (Votação de Impacto)
                     st.markdown("<p style='color:#475569; font-size:12px; margin-bottom:6px; font-weight:600;'>Qual o impacto dessa matéria?</p>", unsafe_allow_html=True)
                     reacao = st.radio(
                         "Avaliação", 
                         ["📈 Alto", "⚠️ Atenção", "🔍 Neutro"], 
-                        key=f"reacao_{chave_unica}_v3", 
+                        key=f"reacao_{chave_unica}_v4", 
                         horizontal=True, 
                         label_visibility="collapsed"
                     )
                     
-                    # EXPANDER SEGURO (Sem hacks de CSS para evitar quebras de texto e sobreposições)
-                    with st.expander("📝 Matéria Completa e Contexto"):
-                        resumo_denso = item.get('resumo_longo', item.get('texto_pt', 'O detalhamento completo desta matéria está sendo processado.'))
-                        st.markdown(f"<p style='color:#0f172a; font-size:15px; font-weight:700; margin-bottom:8px;'>{titulo}</p>", unsafe_allow_html=True)
-                        st.markdown(f"<p style='color:#334155; font-size:14px; line-height:1.6; font-style:italic;'>{resumo_denso}</p>", unsafe_allow_html=True)
-                        st.markdown(f"<div style='margin-top:12px; text-align:right;'><a href='{link_origem}' target='_blank' style='color:#2563eb; text-decoration:none; font-size:13px; font-weight:700;'>Acessar Fonte Oficial ↗</a></div>", unsafe_allow_html=True)
+                    # SOLUÇÃO DO BUG: Acordeão HTML Nativo e Puro
+                    resumo_denso = item.get('resumo_longo', item.get('texto_pt', 'O detalhamento completo desta matéria está sendo processado.'))
+                    
+                    html_acordeao = f"""
+                    <details>
+                        <summary>Matéria Completa e Contexto</summary>
+                        <div style="margin-top: 10px; color: #334155; font-size: 14.5px; line-height: 1.6; font-style: italic;">
+                            <strong style="color: #0f172a; font-style: normal; display: block; margin-bottom: 6px;">{titulo}</strong>
+                            {resumo_denso}
+                            <div style="margin-top: 12px; text-align: right;">
+                                <a href="{link_origem}" target="_blank" style="color: #2563eb; text-decoration: none; font-size: 13px; font-weight: 700;">Acessar Fonte Oficial ↗</a>
+                            </div>
+                        </div>
+                    </details>
+                    """
+                    st.markdown(html_acordeao, unsafe_allow_html=True)
