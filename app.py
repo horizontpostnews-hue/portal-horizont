@@ -29,6 +29,21 @@ st.markdown(
         summary::-webkit-details-marker { display: none !important; }
         summary::before { content: "📝 " !important; }
 
+        /* Renderização Direta de Imagem via Navegador (Contorna bloqueios do servidor) */
+        .web-img-container {
+            width: 100%;
+            height: 220px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            background-color: #0f172a;
+        }
+        .web-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         /* Box de Afiliados / Cupons Premium */
         .box-afiliado {
             background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
@@ -119,7 +134,7 @@ else:
 
     categorias_dinamicas = sorted(list(set(item.get("categoria", "Política") for item in noticias)))
     with col_filtro:
-        categoria_selecionada = st.selectbox("🎯 Filtrar Canal", ["Feed Completo (Todos os Assuntos)"] + categorias_dinamicas)
+        categoria_selecionada = st.selectbox("🎯 Filtrar Canal", ["Feed Completo (Todos os Assuntos)"] + categories_dinamicas)
 
     noticias_recentes = list(reversed(noticias))
     if categoria_selecionada != "Feed Completo (Todos os Assuntos)":
@@ -155,20 +170,13 @@ else:
 
             with coluna_atual:
                 with st.container(border=True):
-                    # SISTEMA BLINDADO CONTRA FALHAS DE REDE OU CÓDIGOS DE IMAGEM PARTIDOS
-                    renderizou = False
+                    # EXIBIÇÃO DIRETA VIA NAVEGADOR COM FALLBACK SEGURO
                     if url_foto and url_foto.strip() != "":
-                        try:
-                            st.image(url_foto, use_container_width=True)
-                            renderizou = True
-                        except Exception:
-                            renderizou = False
-                    
-                    # SE FALHAR OU NÃO TIVER IMAGEM, IMPRIME O CARD INSTITUCIONAL LIMPO SEM ERROS NA TELA
-                    if not renderizou:
-                        st.markdown(f'<div style="width: 100%; height: 210px; background-color: #0f172a; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;"><div style="color: #00f5d4; font-weight: 800; font-size: 20px;">🌐 horizont.news</div></div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="web-img-container"><img src="{url_foto}" alt="Notícia"></div>', unsafe_allow_html=True)
+                    else:
+                        st.markdown(f'<div class="web-img-container" style="display: flex; align-items: center; justify-content: center;"><div style="color: #00f5d4; font-weight: 800; font-size: 20px;">🌐 horizont.news</div></div>', unsafe_allow_html=True)
                         
-                    st.markdown(f"<div style='margin-bottom:8px; margin-top:10px;'>{tag_html}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='margin-bottom:8px;'>{tag_html}</div>", unsafe_allow_html=True)
                     st.markdown(f"<h3 class='titulo-noticia'>{titulo}</h3>", unsafe_allow_html=True)
                     st.markdown(f"<p style='color:#64748b; font-size:12px; margin-bottom:12px;'>📅 {item.get('data')} • 🏛️ Fonte: <b>{item.get('fonte_origem')}</b></p>", unsafe_allow_html=True)
                     st.markdown(f"<p class='texto-noticia'>{texto}</p>", unsafe_allow_html=True)
