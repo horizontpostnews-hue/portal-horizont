@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ESTILIZAÇÃO DO PORTAL: Foco total em contraste e legibilidade universal
+# ESTILIZAÇÃO DO PORTAL: Foco total em legibilidade, contraste e componentes visuais
 st.markdown(
     """
     <style>
@@ -20,11 +20,11 @@ st.markdown(
         }
         .block-container {
             padding-top: 1.5rem !important;
+            padding-bottom: 3rem !important;
         }
         #MainMenu {visibility: hidden;} 
         [data-testid='stSidebar'] {display: none;}
         
-        /* Força o texto das notícias a ter alto contraste (Grafite bem escuro) */
         .texto-noticia {
             color: #1e293b !important;
             font-size: 15px !important;
@@ -32,17 +32,16 @@ st.markdown(
             font-weight: 400 !important;
         }
         
-        /* Título das notícias */
         .titulo-noticia {
             color: #0f172a !important;
             font-weight: 700 !important;
             font-size: 20px !important;
             line-height: 1.3 !important;
-            margin-top: 5px !important;
+            margin-top: 8px !important;
             margin-bottom: 5px !important;
         }
 
-        /* Estilização Premium do Acordeão HTML (Substituto do Expander com Bug) */
+        /* Acordeão HTML Nativo sem bugs */
         details {
             background-color: #f8fafc !important;
             border: 1px solid #e2e8f0 !important;
@@ -55,13 +54,19 @@ st.markdown(
             color: #0f172a !important;
             cursor: pointer !important;
             font-size: 14px !important;
-            list-style: none !important; /* Remove seta padrão em alguns navegadores */
+            list-style: none !important;
         }
-        summary::-webkit-details-marker {
-            display: none !important; /* Remove seta padrão no Chrome/Safari/iOS */
-        }
-        summary::before {
-            content: "📝 " !important;
+        summary::-webkit-details-marker { display: none !important; }
+        summary::before { content: "📝 " !important; }
+        
+        /* Ajuste fino para imagens integradas nas notícias */
+        .img-noticia {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
     </style>
     """, 
@@ -82,13 +87,15 @@ def ler_banco_dados_fresco():
     except Exception as e:
         return []
 
-# HEADER DO PORTAL
+# 1. IDENTIDADE VISUAL (HEADER COM LOGO E CRÉDITO)
+# Substitua a URL abaixo pela URL da sua imagem final hospedada no GitHub quando criá-la.
+# Enquanto não criar sua logo, este bloco simula uma marca em vetor perfeitamente limpa.
 st.markdown(
     """
-    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:22px; border-radius:14px; margin-bottom:20px; text-align:center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-        <h1 style="color:#00f5d4; margin:0; font-weight:700; letter-spacing: -0.5px; font-size: 32px;">🌐 horizont.news</h1>
-        <p style="color:#94a3b8; font-size:13px; margin:5px 0 0 0; font-weight:400;">
-            Informação sem fronteiras — Perspectivas globais para mentes conectadas
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:25px; border-radius:14px; margin-bottom:20px; text-align:center; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+        <h1 style="color:#00f5d4; margin:0; font-weight:800; letter-spacing: -1px; font-size: 34px; display:inline-block; vertical-align:middle;">🌐 horizont.news</h1>
+        <p style="color:#94a3b8; font-size:13px; margin:6px 0 0 0; font-weight:400; letter-spacing: 0.5px;">
+            Informação Sem Fronteiras — Perspectivas Globais Para Mentes Conectadas
         </p>
     </div>
     """, 
@@ -106,15 +113,21 @@ noticias = ler_banco_dados_fresco()
 
 def obter_cor_categoria(cat):
     cores = {
-        "Política": "#e11d48",
-        "Economia": "#16a34a",
-        "Cotidiano": "#2563eb",
-        "Esportes": "#ea580c",
-        "Cultura & Pop": "#db2777",
-        "Tech & Ciência": "#7c3aed",
-        "Viver Bem": "#0d9488"
+        "Política": "#e11d48", "Economia": "#16a34a", "Cotidiano": "#2563eb",
+        "Esportes": "#ea580c", "Cultura & Pop": "#db2777", "Tech & Ciência": "#7c3aed", "Viver Bem": "#0d9488"
     }
     return cores.get(cat, "#4b5563")
+
+# Dicionário de Imagens de Backup Baseadas na Categoria (Evita que o card fique sem imagem)
+def obter_imagem_backup(cat):
+    imagens = {
+        "Economia": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=600&q=80",
+        "Esportes": "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=80",
+        "Política": "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=600&q=80",
+        "Tech & Ciência": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=600&q=80",
+        "Cultura & Pop": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80"
+    }
+    return imagens.get(cat, "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=600&q=80")
 
 if not noticias:
     st.info("📢 Sincronizando feeds mundiais. A sua janela para o planeta está carregando...")
@@ -134,7 +147,6 @@ else:
         categoria_selecionada = st.selectbox("🎯 Filtrar Canal", opcoes_filtro)
 
     sub_selecionada = "Todas as Subcategorias"
-    
     if categoria_selecionada != "Feed Completo (Todos os Assuntos)":
         subcategorias_dinamicas = sorted(list(set(
             item.get("subcategoria", "") for item in noticias 
@@ -165,6 +177,9 @@ else:
             link_origem = item.get("link_origem", "#")
             chave_unica = item.get('id', str(index))
             
+            # Puxa a URL do JSON ou atribui uma imagem linda de backup livre de direitos autorais
+            url_foto = item.get("url_imagem", obter_imagem_backup(categoria))
+            
             total_palavras = len(texto.split()) + len(item.get('resumo_longo', '').split())
             tempo_leitura = max(1, round(total_palavras / 150))
             
@@ -175,21 +190,24 @@ else:
 
             with coluna_atual:
                 with st.container(border=True):
+                    # 2. IMPLEMENTAÇÃO DA IMAGEM DA NOTÍCIA
+                    st.markdown(f'<img src="{url_foto}" class="img-noticia" alt="Imagem da notícia">', unsafe_allow_html=True)
+                    
                     # Tags Editoriais
                     st.markdown(f"<div style='margin-bottom:8px;'>{tag_html}</div>", unsafe_allow_html=True)
                     
-                    # Título com Classe de Cor Escura Fixa
+                    # Título
                     st.markdown(f"<h3 class='titulo-noticia'>{titulo}</h3>", unsafe_allow_html=True)
                     
-                    # Metadados
-                    st.markdown(f"<p style='color:#64748b; font-size:12px; margin-top:2px; margin-bottom:12px;'>📅 {item.get('data')} • ⏱️ {tempo_leitura} min • 🏛️ {item.get('fonte_origem')}</p>", unsafe_allow_html=True)
+                    # Metadados / Crédito do Veículo Original
+                    st.markdown(f"<p style='color:#64748b; font-size:12px; margin-top:2px; margin-bottom:12px;'>📅 {item.get('data')} • ⏱️ {tempo_leitura} min • 🏛️ Fonte original: <b>{item.get('fonte_origem')}</b></p>", unsafe_allow_html=True)
                     
-                    # TEXTO DA NOTÍCIA (Alto Contraste)
+                    # Texto Principal
                     st.markdown(f"<p class='texto-noticia'>{texto}</p>", unsafe_allow_html=True)
                     
                     st.divider()
                     
-                    # AUDIO PLAYER
+                    # PLAYER DE ÁUDIO
                     texto_limpo = texto.replace('"', '').replace("'", "").replace('\n', ' ')
                     titulo_limpo = titulo.replace('"', '').replace("'", "")
                     html_audio = f"""
@@ -206,19 +224,12 @@ else:
                     """
                     components.html(html_audio, height=42)
                     
-                    # INTERATIVIDADE (Votação de Impacto)
+                    # Interação
                     st.markdown("<p style='color:#475569; font-size:12px; margin-bottom:6px; font-weight:600;'>Qual o impacto dessa matéria?</p>", unsafe_allow_html=True)
-                    reacao = st.radio(
-                        "Avaliação", 
-                        ["📈 Alto", "⚠️ Atenção", "🔍 Neutro"], 
-                        key=f"reacao_{chave_unica}_v4", 
-                        horizontal=True, 
-                        label_visibility="collapsed"
-                    )
+                    reacao = st.radio("Avaliação", ["📈 Alto", "⚠️ Atenção", "🔍 Neutro"], key=f"reacao_{chave_unica}_v5", horizontal=True, label_visibility="collapsed")
                     
-                    # SOLUÇÃO DO BUG: Acordeão HTML Nativo e Puro
+                    # Acordeão Seguro
                     resumo_denso = item.get('resumo_longo', item.get('texto_pt', 'O detalhamento completo desta matéria está sendo processado.'))
-                    
                     html_acordeao = f"""
                     <details>
                         <summary>Matéria Completa e Contexto</summary>
@@ -232,3 +243,16 @@ else:
                     </details>
                     """
                     st.markdown(html_acordeao, unsafe_allow_html=True)
+
+# 3. CRÉDITOS DO VEÍCULO (RODAPÉ INSTITUCIONAL)
+st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown(
+    """
+    <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center; color: #64748b; font-size: 12px;">
+        <p style="margin: 0; font-weight: 600;">🌐 horizont.news — Portal de Agregação de Conteúdo Internacional Inteligente</p>
+        <p style="margin: 4px 0 0 0;">Conteúdos compilados automaticamente via robô de fontes públicas respeitáveis (G1, UOL, Al Jazeera, Valor Econômico). Todos os direitos reservados aos respectivos veículos originais.</p>
+        <p style="margin: 4px 0 0 0; color: #94a3b8;">Desenvolvido com Streamlit e Python para leitura multiplataforma adaptada e acessível.</p>
+    </div>
+    """, 
+    unsafe_allow_html=True
+)
