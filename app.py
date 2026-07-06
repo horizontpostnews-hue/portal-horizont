@@ -155,10 +155,17 @@ else:
 
             with coluna_atual:
                 with st.container(border=True):
-                    # EXIBIÇÃO ROBUSTA COM COMPONENTE NATIVO STREAMLIT
+                    # SISTEMA BLINDADO CONTRA FALHAS DE REDE OU CÓDIGOS DE IMAGEM PARTIDOS
+                    renderizou = False
                     if url_foto and url_foto.strip() != "":
-                        st.image(url_foto, use_container_width=True)
-                    else:
+                        try:
+                            st.image(url_foto, use_container_width=True)
+                            renderizou = True
+                        except Exception:
+                            renderizou = False
+                    
+                    # SE FALHAR OU NÃO TIVER IMAGEM, IMPRIME O CARD INSTITUCIONAL LIMPO SEM ERROS NA TELA
+                    if not renderizou:
                         st.markdown(f'<div style="width: 100%; height: 210px; background-color: #0f172a; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;"><div style="color: #00f5d4; font-weight: 800; font-size: 20px;">🌐 horizont.news</div></div>', unsafe_allow_html=True)
                         
                     st.markdown(f"<div style='margin-bottom:8px; margin-top:10px;'>{tag_html}</div>", unsafe_allow_html=True)
