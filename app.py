@@ -99,7 +99,7 @@ def obter_oferta_afiliado(categoria):
             "link": "https://www.amazon.com.br?tag=seu_id_afiliado-20"
         },
         "Tech & Ciência": {
-            "texto": "💻 <b>Upgrade Tecnológico:</b> Procurando gadgets para aumentare a produtividade? Confira a seleção semanal com até 20% OFF.",
+            "texto": "💻 <b>Upgrade Tecnológico:</b> Procurando gadgets para aumentar a produtividade? Confira a seleção semanal com até 20% OFF.",
             "cupom": "TECHHORIZONT",
             "link": "https://www.amazon.com.br?tag=seu_id_afiliado-20"
         },
@@ -132,13 +132,18 @@ else:
         sufixo = {"Português": "pt", "English": "en", "Español": "es"}[idioma]
         lang_audio = {"Português": "pt-BR", "English": "en-US", "Español": "es-ES"}[idioma]
 
-    categorias_dinamicas = sorted(list(set(item.get("categoria", "Política") for item in noticias)))
+    # Geração segura das opções de categorias
+    opcoes_filtro = ["Feed Completo (Todos os Assuntos)"]
+    if isinstance(noticias, list):
+        categorias_extraidas = sorted(list(set(item.get("categoria", "Política") for item in noticias if isinstance(item, dict))))
+        opcoes_filtro.extend(categorias_extraidas)
+
     with col_filtro:
-        categoria_selecionada = st.selectbox("🎯 Filtrar Canal", ["Feed Completo (Todos os Assuntos)"] + categorias_dinamicas)
+        categoria_selecionada = st.selectbox("🎯 Filtrar Canal", opcoes_filtro)
 
     noticias_recentes = list(reversed(noticias))
     if categoria_selecionada != "Feed Completo (Todos os Assuntos)":
-        noticias_recentes = [n for n in noticias_recentes if n.get("categoria", "Política") == categoria_selecionada]
+        noticias_recentes = [n for n in noticias_recentes if isinstance(n, dict) and n.get("categoria", "Política") == categoria_selecionada]
     
     if not noticias_recentes:
         st.warning(f"Sem registros novos para este canal.")
@@ -146,6 +151,9 @@ else:
         col1, col2 = st.columns(2)
         
         for index, item in enumerate(noticias_recentes):
+            if not isinstance(item, dict):
+                continue
+                
             coluna_atual = col1 if index % 2 == 0 else col2
             
             titulo = item.get(f"titulo_{sufixo}", item.get("titulo_pt", "Sem Título"))
@@ -153,7 +161,6 @@ else:
             categoria = item.get("categoria", "Política")
             subcategoria = item.get("subcategoria", "")
             link_origem = item.get("link_origem", "#")
-            
             url_foto = item.get("url_imagem")
             
             cor_tag = obter_cor_categoria(categoria)
@@ -166,7 +173,7 @@ else:
 
             with coluna_atual:
                 with st.container(border=True):
-                    if url_foto and url_foto.strip() != "":
+                    if url_foto and str(url_foto).strip() != "":
                         st.markdown(f'<div class="web-img-container"><img src="{url_foto}" alt="Notícia"></div>', unsafe_allow_html=True)
                     else:
                         st.markdown(f'<div class="web-img-container" style="display: flex; align-items: center; justify-content: center;"><div style="color: #00f5d4; font-weight: 800; font-size: 20px;">🌐 horizont.news</div></div>', unsafe_allow_html=True)
@@ -179,8 +186,8 @@ else:
                     st.divider()
                     
                     # AUDIO PLAYER
-                    texto_limpo = texto.replace('"', '').replace("'", "").replace('\n', ' ')
-                    titulo_limpo = titulo.replace('"', '').replace("'", "")
+                    texto_limpo = str(texto).replace('"', '').replace("'", "").replace('\n', ' ')
+                    titulo_limpo = str(titulo).replace('"', '').replace("'", "")
                     html_audio = f"""
                     <div style="display: flex; justify-content: center; margin-bottom: 5px;">
                         <button onclick="window.speechSynthesis.cancel(); var msg = new SpeechSynthesisUtterance('{titulo_limpo}. {texto_limpo}'); msg.lang='{lang_audio}'; window.speechSynthesis.speak(msg);" 
