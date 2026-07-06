@@ -1,215 +1,184 @@
-import streamlit as st
+import os
 import json
-import urllib.request
-import streamlit.components.v1 as components
+import feedparser
+import re
+import requests
+from bs4 import BeautifulSoup
+from deep_translator import GoogleTranslator
+from datetime import datetime
 
-st.set_page_config(
-    page_title="horizont.news — Conectando Gerações",
-    page_icon="🌐",
-    layout="wide"
-)
+# Mapeamento de Fontes Mundiais e suas Categorias e Subcategorias
+FONTES_RSS = {
+    "Al Jazeera (Oriente Médio)": {"url": "https://www.aljazeera.com/xml/rss/all.xml", "categoria": "Política", "subcategoria": "Ásia Ocidental", "termo_img": "middle east politics"},
+    "RT News (Rússia/Leste Europeu)": {"url": "https://actualidad.rt.com/feeds/all.xml", "categoria": "Política", "subcategoria": "Europa Oriental", "termo_img": "russia"},
+    "BBC News": {"url": "https://feeds.bbci.co.uk/news/world/rss.xml", "categoria": "Política", "subcategoria": "Internacional", "termo_img": "world news"},
+    "Xinhua Net (China)": {"url": "http://www.xinhuanet.com/english/rss/worldrss.xml", "categoria": "Economia", "subcategoria": "Ásia Oriental", "termo_img": "china economy"},
+    "Valor Econômico": {"url": "https://valor.globo.com/rss/valor/", "categoria": "Economia", "subcategoria": "Nacional", "termo_img": "finance"},
+    "Infomoney": {"url": "https://www.infomoney.com.br/feed/", "categoria": "Economia", "subcategoria": "Mercado", "termo_img": "stock market"},
+    "CBC News (Canadá)": {"url": "https://rss.cbc.ca/lineup/world.xml", "categoria": "Cotidiano", "subcategoria": "América do Norte", "termo_img": "canada"},
+    "G1 Brasil": {"url": "https://g1.globo.com/rss/g1/brasil/", "categoria": "Cotidiano", "subcategoria": "Nacional", "termo_img": "brazil"},
+    "Globo Esporte (GE)": {"url": "https://ge.globo.com/rss/ge/", "categoria": "Esportes", "subcategoria": "Futebol/Nacional", "termo_img": "soccer"},
+    "UOL Esporte": {"url": "http://rss.uol.com.br/feed/esporte.xml", "categoria": "Esportes", "subcategoria": "Geral", "termo_img": "sports"},
+    "Telesur (América Latina/Chile)": {"url": "https://www.telesurtv.net/rss/RssAll.html", "categoria": "Cultura & Pop", "subcategoria": "América do Sul", "termo_img": "latin america"},
+    "Aristegui Noticias (México)": {"url": "https://aristeguinoticias.com/feed/", "categoria": "Cultura & Pop", "subcategoria": "América Central", "termo_img": "mexico"},
+    "Omelete": {"url": "https://www.omelete.com.br/feed", "categoria": "Cultura & Pop", "subcategoria": "Cinema & Séries", "termo_img": "movie movie"},
+    "UOL Entretenimento": {"url": "http://rss.uol.com.br/feed/entretenimento.xml", "categoria": "Cultura & Pop", "subcategoria": "Tendências", "termo_img": "pop culture"},
+    "NHK World (Japão)": {"url": "https://www3.nhk.or.jp/nhkworld/nhknews/rss/index.xml", "categoria": "Tech & Ciência", "subcategoria": "Ásia Oriental", "termo_img": "japan technology"},
+    "Canaltech": {"url": "https://canaltech.com.br/rss/", "categoria": "Tech & Ciência", "subcategoria": "Inovação", "termo_img": "technology"},
+    "G1 Bem Estar": {"url": "https://g1.globo.com/rss/g1/saude/", "categoria": "Viver Bem", "subcategoria": "Saúde e Medicina", "termo_img": "health"}
+}
 
-# ESTILIZAÇÃO DO PORTAL
-st.markdown(
-    """
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        
-        * { font-family: 'Inter', sans-serif !important; }
-        .block-container { padding-top: 1.5rem !important; padding-bottom: 3rem !important; }
-        #MainMenu {visibility: hidden;} 
-        [data-testid='stSidebar'] {display: none;}
-        
-        .texto-noticia { color: #1e293b !important; font-size: 15px !important; line-height: 1.6 !important; font-weight: 400 !important; }
-        .titulo-noticia { color: #0f172a !important; font-weight: 700 !important; font-size: 20px !important; line-height: 1.3 !important; margin-top: 8px !important; margin-bottom: 5px !important; }
+ARQUIVO_BANCO = "banco_noticias.json"
 
-        /* Acordeão HTML Nativo */
-        details { background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important; padding: 10px 14px !important; margin-top: 15px !important; }
-        summary { font-weight: 600 !important; color: #0f172a !important; cursor: pointer !important; font-size: 14px !important; list-style: none !important; }
-        summary::-webkit-details-marker { display: none !important; }
-        summary::before { content: "📝 " !important; }
-        
-        /* Container de imagem resiliente e focado na foto real */
-        .container-img-noticia { width: 100%; height: 210px; background-color: #0f172a; border-radius: 10px; margin-bottom: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .img-noticia { width: 100%; height: 100%; object-fit: cover; }
-        .placeholder-logo { color: #00f5d4; font-weight: 800; font-size: 20px; text-align: center; }
+def ler_banco():
+    if os.path.exists(ARQUIVO_BANCO):
+        try:
+            with open(ARQUIVO_BANCO, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            return []
+    return []
 
-        /* Box de Afiliados / Cupons Premium */
-        .box-afiliado {
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            border: 1px dashed #22c55e;
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 15px;
-            font-size: 13px;
-            color: #14532d;
-        }
-    </style>
-    """, 
-    unsafe_allow_html=True
-)
+def salvar_banco(dados):
+    with open(ARQUIVO_BANCO, "w", encoding="utf-8") as f:
+        json.dump(dados, f, ensure_ascii=False, indent=4)
 
-URL_BANCO_RAW = "https://raw.githubusercontent.com/horizontpostnews-hue/portal-horizont/refs/heads/main/banco_noticias.json"
+def limpar_html(texto):
+    if not texto:
+        return ""
+    return re.sub('<[^<]+?>', '', str(texto)).strip()
 
-@st.cache_data(ttl=60)
-def ler_banco_dados_fresco():
+def extrair_dados_da_pagina(url_da_noticia, termo_seguranca):
+    dados = {"resumo": "Resumo longo indisponível para o layout desta fonte.", "url_imagem": ""}
     try:
-        req = urllib.request.Request(URL_BANCO_RAW, headers={'User-Agent': 'Mozilla/5.0', 'Cache-Control': 'no-cache'})
-        with urllib.request.urlopen(req) as response:
-            return json.loads(response.read().decode('utf-8'))
-    except Exception:
-        return []
-
-# HEADER DO PORTAL
-st.markdown(
-    """
-    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:25px; border-radius:14px; margin-bottom:20px; text-align:center; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
-        <h1 style="color:#00f5d4; margin:0; font-weight:800; letter-spacing: -1px; font-size: 34px; display:inline-block; vertical-align:middle;">🌐 horizont.news</h1>
-        <p style="color:#94a3b8; font-size:13px; margin:6px 0 0 0; font-weight:400; letter-spacing: 0.5px;">Informação Sem Fronteiras — Perspectivas Globais Para Mentes Conectadas</p>
-    </div>
-    """, 
-    unsafe_allow_html=True
-)
-
-# TICKER
-st.markdown("<marquee style='width: 100%; color: #0f172a; background-color: #00f5d4; padding: 8px; font-size: 13px; font-weight: 700; border-radius: 8px; margin-bottom: 25px;'>⚡ AGORA NO MUNDO: Cobertura internacional integrada da Ásia, Europa, Américas e Oriente Médio...</marquee>", unsafe_allow_html=True)
-
-noticias = ler_banco_dados_fresco()
-
-def obter_cor_categoria(cat):
-    cores = {"Política": "#e11d48", "Economia": "#16a34a", "Cotidiano": "#2563eb", "Esportes": "#ea580c", "Cultura & Pop": "#db2777", "Tech & Ciência": "#7c3aed", "Viver Bem": "#0d9488"}
-    return cores.get(cat, "#4b5563")
-
-# MOTOR DE MONETIZAÇÃO
-def obter_oferta_afiliado(categoria):
-    campanhas = {
-        "Economia": {
-            "texto": "📚 <b>Leitura Recomendada:</b> Entenda os ciclos financeiros globais com os livros mais vendidos da Amazon sobre macroeconomia.",
-            "cupom": "FRETE GRÁTIS PRIME",
-            "link": "https://www.amazon.com.br?tag=seu_id_afiliado-20"
-        },
-        "Tech & Ciência": {
-            "texto": "💻 <b>Upgrade Tecnológico:</b> Procurando gadgets para aumentar sua produtividade? Confira a seleção semanal com até 20% OFF.",
-            "cupom": "TECHHORIZONT",
-            "link": "https://www.amazon.com.br?tag=seu_id_afiliado-20"
-        },
-        "Cultura & Pop": {
-            "texto": "🎟️ <b>Cinema & Streaming:</b> Assine o Amazon Prime e tenha acesso a milhares de filmes, séries e músicas. Teste grátis por 30 dias.",
-            "cupom": "TESTE_GRATIS_30D",
-            "link": "https://www.amazon.com.br?tag=seu_id_afiliado-20"
-        },
-        "Esportes": {
-            "texto": "👟 <b>Alta Performance:</b> Renove seus equipamentos e roupas esportivas diretamente nas lojas oficiais parceiras com descontos exclusivos.",
-            "cupom": "FITNESS10",
-            "link": "https://www.amazon.com.br?tag=seu_id_afiliado-20"
+        # Mimetiza perfeitamente um navegador real atualizado para furar os bloqueios de segurança
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5'
         }
-    }
-    padrao = {
-        "texto": "📖 <b>Mantenha-se Informado:</b> Dispositivos Kindle com condições especiais de parcelamento na Amazon para ler em qualquer lugar.",
-        "cupom": "KINDLE2026",
-        "link": "https://www.amazon.com.br?tag=seu_id_afiliado-20"
-    }
-    return campanhas.get(categoria, padrao)
-
-
-if not noticias:
-    st.info("📢 Sincronizando feeds mundiais...")
-else:
-    # FILTROS
-    col_lang, col_filtro = st.columns(2)
-    with col_lang:
-        idioma = st.selectbox("🌎 Escolha seu Idioma", ["Português", "English", "Español"])
-        sufixo = {"Português": "pt", "English": "en", "Español": "es"}[idioma]
-        lang_audio = {"Português": "pt-BR", "English": "en-US", "Español": "es-ES"}[idioma]
-
-    categorias_dinamicas = sorted(list(set(item.get("categoria", "Política") for item in noticias)))
-    with col_filtro:
-        categoria_selecionada = st.selectbox("🎯 Filtrar Canal", ["Feed Completo (Todos os Assuntos)"] + categorias_dinamicas)
-
-    noticias_recentes = list(reversed(noticias))
-    if categoria_selecionada != "Feed Completo (Todos os Assuntos)":
-        noticias_recentes = [n for n in noticias_recentes if n.get("categoria", "Política") == categoria_selecionada]
-    
-    if not noticias_recentes:
-        st.warning(f"Sem registros novos para este canal.")
-    else:
-        col1, col2 = st.columns(2)
+        resposta = requests.get(url_da_noticia, headers=headers, timeout=10)
         
-        for index, item in enumerate(noticias_recentes):
-            coluna_atual = col1 if index % 2 == 0 else col2
+        if resposta.status_code == 200:
+            sopa = BeautifulSoup(resposta.content, 'html.parser')
             
-            titulo = item.get(f"titulo_{sufixo}", item.get("titulo_pt", "Sem Título"))
-            texto = item.get(f"texto_{sufixo}", item.get("texto_pt", "Sem Conteúdo"))
-            categoria = item.get("categoria", "Política")
-            subcategoria = item.get("subcategoria", "")
-            link_origem = item.get("link_origem", "#")
-            chave_unica = item.get('id', str(index))
-            
-            # CAPTURA DA IMAGEM REAL DO ARTIGO
-            url_foto = item.get("url_imagem")
-            
-            total_palavras = len(texto.split()) + len(item.get('resumo_longo', '').split())
-            tempo_leitura = max(1, round(total_palavras / 150))
-            
-            cor_tag = obter_cor_categoria(categoria)
-            
-            # Formatação de Tags Dinâmicas (Categoria + Subcategoria Geográfica)
-            tag_html = f"<span style='background-color:{cor_tag}; color:white; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase; margin-right:6px;'>{categoria}</span>"
-            if subcategoria:
-                tag_html += f"<span style='background-color:#e2e8f0; color:#475569; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:600; text-transform:uppercase;'>📍 {subcategoria}</span>"
-            
-            oferta = obter_oferta_afiliado(categoria)
+            # 1. Extração de texto
+            paragrafos = sopa.find_all('p')
+            texto_completo = " ".join([p.get_text().strip() for p in paragrafos])
+            texto_limpo = " ".join(texto_completo.split())
+            if len(texto_limpo) >= 50:
+                dados["resumo"] = texto_limpo[:800] + "..."
+                
+            # 2. Extração de Imagem Real
+            meta_img = sopa.find("meta", property="og:image") or sopa.find("meta", attrs={"name": "twitter:image"})
+            if meta_img and meta_img.get("content"):
+                url_detectada = meta_img["content"].strip()
+                if url_detectada.startswith("http"):
+                    dados["url_imagem"] = url_detectada
 
-            with coluna_atual:
-                with st.container(border=True):
-                    # EXIBIÇÃO TRATADA: Só usa se a URL contiver uma imagem legítima vinda da fonte externa
-                    if url_foto and url_foto.strip() != "" and "source.unsplash.com" not in url_foto:
-                        st.markdown(f'<div class="container-img-noticia"><img src="{url_foto}" class="img-noticia" alt="Notícia"></div>', unsafe_allow_html=True)
-                    else:
-                        st.markdown(f'<div class="container-img-noticia"><div class="placeholder-logo">🌐 horizont.news</div></div>', unsafe_allow_html=True)
-                        
-                    st.markdown(f"<div style='margin-bottom:8px;'>{tag_html}</div>", unsafe_allow_html=True)
-                    st.markdown(f"<h3 class='titulo-noticia'>{titulo}</h3>", unsafe_allow_html=True)
-                    st.markdown(f"<p style='color:#64748b; font-size:12px; margin-bottom:12px;'>📅 {item.get('data')} • 🏛️ Fonte: <b>{item.get('fonte_origem')}</b></p>", unsafe_allow_html=True)
-                    st.markdown(f"<p class='texto-noticia'>{texto}</p>", unsafe_allow_html=True)
-                    
-                    st.divider()
-                    
-                    # AUDIO PLAYER
-                    texto_limpo = texto.replace('"', '').replace("'", "").replace('\n', ' ')
-                    titulo_limpo = titulo.replace('"', '').replace("'", "")
-                    html_audio = f"""
-                    <div style="display: flex; justify-content: center; margin-bottom: 5px;">
-                        <button onclick="window.speechSynthesis.cancel(); var msg = new SpeechSynthesisUtterance('{titulo_limpo}. {texto_limpo}'); msg.lang='{lang_audio}'; window.speechSynthesis.speak(msg);" 
-                        style="background-color:#0f172a; color:#00f5d4; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 700;">🔊 Ouvir Notícia</button>
-                    </div>
-                    """
-                    components.html(html_audio, height=42)
-                    
-                    # ACORDEÃO
-                    resumo_denso = item.get('resumo_longo', item.get('texto_pt', 'O detalhamento completo desta matéria está sendo processado.'))
-                    html_acordeao = f"""
-                    <details>
-                        <summary>Matéria Completa e Contexto</summary>
-                        <div style="margin-top: 10px; color: #334155; font-size: 14.5px; line-height: 1.6; font-style: italic;">
-                            <strong style="color: #0f172a; font-style: normal; display: block; margin-bottom: 6px;">{titulo}</strong>
-                            {resumo_denso}
-                            
-                            <div class="box-afiliado">
-                                {oferta['texto']}<br>
-                                <span style="background-color:#22c55e; color:white; padding:1px 6px; border-radius:4px; font-size:11px; font-weight:700; font-style:normal; margin-top:5px; display:inline-block;">CUPOM: {oferta['cupom']}</span>
-                                <div style="margin-top:8px; text-align:right;">
-                                    <a href="{oferta['link']}" target="_blank" style="background-color:#14532d; color:#ffffff; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:12px; font-weight:700; font-style:normal;">Aproveitar Oferta ↗</a>
-                                </div>
-                            </div>
+    except Exception as e:
+        print(f"Aviso de raspagem em {url_da_noticia}: {e}")
+        
+    # BACKUP INTELIGENTE ANTI-CAIXA-VAZIA: Se o site bloqueou ou não achou imagem, gera uma imagem jornalística dinâmica e única baseada na fonte/termo
+    if not dados["url_imagem"]:
+        hash_id = int(datetime.now().microsecond)
+        dados["url_imagem"] = f"https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&auto=format&fit=crop&q=60" # Foto padrão jornalismo caso falhe o termo
+        if termo_seguranca:
+            termo_url = termo_seguranca.replace(" ", "-")
+            dados["url_imagem"] = f"https://source.unsplash.com/featured/600x400/?{termo_url}&sig={hash_id}"
+            
+    return dados
 
-                            <div style="margin-top: 15px; text-align: right; border-top: 1px solid #e2e8f0; padding-top:10px;">
-                                <a href="{link_origem}" target="_blank" style="color: #2563eb; text-decoration: none; font-size: 13px; font-weight: 700; font-style:normal;">Acessar Fonte Oficial ↗</a>
-                            </div>
-                        </div>
-                    </details>
-                    """
-                    st.markdown(html_acordeao, unsafe_allow_html=True)
+def traduzir_noticia(titulo_org, texto_org, resumo_longo_org):
+    try:
+        if not titulo_org: titulo_org = "Sem título"
+        if not texto_org: texto_org = "Sem descrição disponível."
+        
+        tradutor_pt = GoogleTranslator(source='auto', target='pt')
+        tradutor_es = GoogleTranslator(source='auto', target='es')
+        tradutor_en = GoogleTranslator(source='auto', target='en')
+        
+        titulo_pt = tradutor_pt.translate(titulo_org)
+        texto_pt = tradutor_pt.translate(texto_org)
+        resumo_pt = tradutor_pt.translate(resumo_longo_org) if resumo_longo_org else texto_pt
+        
+        titulo_es = tradutor_es.translate(titulo_org)
+        texto_es = tradutor_es.translate(texto_org)
+        
+        titulo_en = tradutor_en.translate(titulo_org)
+        texto_en = tradutor_en.translate(texto_org)
+        
+        return {
+            "titulo_pt": titulo_pt, "texto_pt": texto_pt,
+            "titulo_en": titulo_en, "texto_en": texto_en,
+            "titulo_es": titulo_es, "texto_es": texto_es,
+            "resumo_longo": resumo_pt 
+        }
+    except Exception as e:
+        return {
+            "titulo_pt": titulo_org, "texto_pt": texto_org,
+            "titulo_en": titulo_org, "texto_en": texto_org,
+            "titulo_es": titulo_org, "texto_es": texto_org,
+            "resumo_longo": resumo_longo_org if resumo_longo_org else texto_org
+        }
 
-# RODAPÉ
-st.markdown("<br><br><div style='border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center; color: #64748b; font-size: 12px;'><p style='margin: 0;'>🌐 horizont.news — Todos os direitos reservados.</p></div>", unsafe_allow_html=True)
+def rodar_robo():
+    banco_atual = ler_banco()
+    links_existentes = {item.get("link_origem") for item in banco_atual}
+    novas_noticias = []
+    
+    cont_processadas = 0
+    for nome_fonte, dados_fonte in FONTES_RSS.items():
+        if cont_processadas >= 25: 
+            break
+            
+        url_rss = dados_fonte["url"]
+        categoria = dados_fonte["categoria"]
+        subcategoria = dados_fonte.get("subcategoria", "Geral")
+        termo_img = dados_fonte.get("termo_img", "news")
+            
+        try:
+            feed = feedparser.parse(url_rss)
+            for entry in feed.entries[:1]:
+                link = entry.get("link", "")
+                if not link or link in links_existentes:
+                    continue
+                    
+                titulo_original = entry.get("title", "")
+                resumo_cru = entry.get("summary", entry.get("description", ""))
+                texto_original = limpar_html(resumo_cru)
+                
+                print(f"Processando Global: {nome_fonte} | {categoria} > {subcategoria}...")
+                
+                dados_pagina = extrair_dados_da_pagina(link, termo_img)
+                dados_traduzidos = traduzir_noticia(titulo_original, texto_original, dados_pagina["resumo"])
+                
+                item_noticia = {
+                    "id": len(banco_atual) + len(novas_noticias) + 1,
+                    "data": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "fonte_origem": nome_fonte,
+                    "categoria": categoria,
+                    "subcategoria": subcategoria,
+                    "link_origem": link,
+                    "url_imagem": dados_pagina["url_imagem"],
+                    "status": "APROVADO",
+                    **dados_traduzidos
+                }
+                
+                novas_noticias.append(item_noticia)
+                links_existentes.add(link)
+                cont_processadas += 1
+                
+        except Exception as erro_fonte:
+            print(f"Erro ao processar a fonte {nome_fonte}: {erro_fonte}")
+                
+    if novas_noticias:
+        banco_atual.extend(novas_noticias)
+        banco_atual = banco_atual[-150:] 
+        salvar_banco(banco_atual)
+        print(f"Sucesso! {len(novas_noticias)} matérias globais integradas.")
+    else:
+        print("Nenhuma notícia nova encontrada.")
+
+if __name__ == "__main__":
+    rodar_robo()
