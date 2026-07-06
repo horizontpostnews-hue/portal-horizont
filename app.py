@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ESTILIZAÇÃO DO PORTAL
+# ESTILIZAÇÃO DO PORTAL (CORRIGIDA E OTIMIZADA)
 st.markdown(
     """
     <style>
@@ -20,29 +20,54 @@ st.markdown(
         #MainMenu {visibility: hidden;} 
         [data-testid='stSidebar'] {display: none;}
         
-        .texto-noticia { color: #1e293b !important; font-size: 15px !important; line-height: 1.6 !important; font-weight: 400 !important; }
-        .titulo-noticia { color: #0f172a !important; font-weight: 700 !important; font-size: 20px !important; line-height: 1.3 !important; margin-top: 8px !important; margin-bottom: 5px !important; }
+        /* Ajuste de Grid e Cards para manter harmonia */
+        [data-testid="stVerticalBlockBorder"] {
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+        }
 
-        /* Acordeão HTML Nativo */
-        details { background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important; padding: 10px 14px !important; margin-top: 15px !important; }
-        summary { font-weight: 600 !important; color: #0f172a !important; cursor: pointer !important; font-size: 14px !important; list-style: none !important; }
-        summary::-webkit-details-marker { display: none !important; }
-        summary::before { content: "📝 " !important; }
+        .texto-noticia { 
+            color: #1e293b !important; 
+            font-size: 14.5px !important; 
+            line-height: 1.6 !important; 
+            font-weight: 400 !important;
+            margin-bottom: 15px !important;
+        }
+        
+        .titulo-noticia { 
+            color: #0f172a !important; 
+            font-weight: 700 !important; 
+            font-size: 19px !important; 
+            line-height: 1.3 !important; 
+            margin-top: 10px !important; 
+            margin-bottom: 6px !important; 
+        }
 
-        /* Renderização Direta de Imagem via Navegador */
+        /* CORREÇÃO DO CARD DE IMAGEM: Proporção perfeita sem cortes agressivos */
         .web-img-container {
             width: 100%;
-            height: 220px;
+            height: 230px;
             border-radius: 10px;
             overflow: hidden;
             margin-bottom: 12px;
             background-color: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .web-img-container img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* Mantém preenchimento elegante */
         }
+
+        /* Acordeão HTML Nativo */
+        details { background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important; padding: 10px 14px !important; margin-top: 10px !important; }
+        summary { font-weight: 600 !important; color: #0f172a !important; cursor: pointer !important; font-size: 14px !important; list-style: none !important; }
+        summary::-webkit-details-marker { display: none !important; }
+        summary::before { content: "📝 " !important; }
 
         /* Box de Afiliados / Cupons Premium */
         .box-afiliado {
@@ -90,7 +115,6 @@ def obter_cor_categoria(cat):
     cores = {"Política": "#e11d48", "Economia": "#16a34a", "Cotidiano": "#2563eb", "Esportes": "#ea580c", "Cultura & Pop": "#db2777", "Tech & Ciência": "#7c3aed", "Viver Bem": "#0d9488"}
     return cores.get(cat, "#4b5563")
 
-# MOTOR DE MONETIZAÇÃO
 def obter_oferta_afiliado(categoria):
     campanhas = {
         "Economia": {
@@ -132,7 +156,6 @@ else:
         sufixo = {"Português": "pt", "English": "en", "Español": "es"}[idioma]
         lang_audio = {"Português": "pt-BR", "English": "en-US", "Español": "es-ES"}[idioma]
 
-    # Geração segura das opções de categorias
     opcoes_filtro = ["Feed Completo (Todos os Assuntos)"]
     if isinstance(noticias, list):
         categorias_extraidas = sorted(list(set(item.get("categoria", "Política") for item in noticias if isinstance(item, dict))))
@@ -173,6 +196,7 @@ else:
 
             with coluna_atual:
                 with st.container(border=True):
+                    # Exibição de Imagem com CSS aprimorado
                     if url_foto and str(url_foto).strip() != "":
                         st.markdown(f'<div class="web-img-container"><img src="{url_foto}" alt="Notícia"></div>', unsafe_allow_html=True)
                     else:
@@ -185,16 +209,16 @@ else:
                     
                     st.divider()
                     
-                    # AUDIO PLAYER
+                    # PLAYER DE ÁUDIO RECOBERTO (Elimina bordas indesejadas)
                     texto_limpo = str(texto).replace('"', '').replace("'", "").replace('\n', ' ')
                     titulo_limpo = str(titulo).replace('"', '').replace("'", "")
                     html_audio = f"""
-                    <div style="display: flex; justify-content: center; margin-bottom: 5px;">
+                    <div style="display: flex; justify-content: center; margin-bottom: 0px;">
                         <button onclick="window.speechSynthesis.cancel(); var msg = new SpeechSynthesisUtterance('{titulo_limpo}. {texto_limpo}'); msg.lang='{lang_audio}'; window.speechSynthesis.speak(msg);" 
-                        style="background-color:#0f172a; color:#00f5d4; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 700;">🔊 Ouvir Notícia</button>
+                        style="background-color:#0f172a; color:#00f5d4; border: none; padding: 10px 22px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 700; width: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">🔊 Ouvir Matéria em Áudio</button>
                     </div>
                     """
-                    components.html(html_audio, height=42)
+                    components.html(html_audio, height=45)
                     
                     # ACORDEÃO
                     resumo_denso = item.get('resumo_longo', item.get('texto_pt', 'O detalhamento completo desta matéria está sendo processado.'))
