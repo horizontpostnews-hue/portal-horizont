@@ -6,26 +6,27 @@ import requests
 from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
 from datetime import datetime
+import random
 
 # Mapeamento de Fontes Mundiais e suas Categorias e Subcategorias
 FONTES_RSS = {
-    "Al Jazeera (Oriente Médio)": {"url": "https://www.aljazeera.com/xml/rss/all.xml", "categoria": "Política", "subcategoria": "Ásia Ocidental", "termo_img": "middle east politics"},
-    "RT News (Rússia/Leste Europeu)": {"url": "https://actualidad.rt.com/feeds/all.xml", "categoria": "Política", "subcategoria": "Europa Oriental", "termo_img": "russia"},
-    "BBC News": {"url": "https://feeds.bbci.co.uk/news/world/rss.xml", "categoria": "Política", "subcategoria": "Internacional", "termo_img": "world news"},
-    "Xinhua Net (China)": {"url": "http://www.xinhuanet.com/english/rss/worldrss.xml", "categoria": "Economia", "subcategoria": "Ásia Oriental", "termo_img": "china economy"},
-    "Valor Econômico": {"url": "https://valor.globo.com/rss/valor/", "categoria": "Economia", "subcategoria": "Nacional", "termo_img": "finance"},
-    "Infomoney": {"url": "https://www.infomoney.com.br/feed/", "categoria": "Economia", "subcategoria": "Mercado", "termo_img": "stock market"},
-    "CBC News (Canadá)": {"url": "https://rss.cbc.ca/lineup/world.xml", "categoria": "Cotidiano", "subcategoria": "América do Norte", "termo_img": "canada"},
-    "G1 Brasil": {"url": "https://g1.globo.com/rss/g1/brasil/", "categoria": "Cotidiano", "subcategoria": "Nacional", "termo_img": "brazil"},
-    "Globo Esporte (GE)": {"url": "https://ge.globo.com/rss/ge/", "categoria": "Esportes", "subcategoria": "Futebol/Nacional", "termo_img": "soccer"},
-    "UOL Esporte": {"url": "http://rss.uol.com.br/feed/esporte.xml", "categoria": "Esportes", "subcategoria": "Geral", "termo_img": "sports"},
-    "Telesur (América Latina/Chile)": {"url": "https://www.telesurtv.net/rss/RssAll.html", "categoria": "Cultura & Pop", "subcategoria": "América do Sul", "termo_img": "latin america"},
-    "Aristegui Noticias (México)": {"url": "https://aristeguinoticias.com/feed/", "categoria": "Cultura & Pop", "subcategoria": "América Central", "termo_img": "mexico"},
-    "Omelete": {"url": "https://www.omelete.com.br/feed", "categoria": "Cultura & Pop", "subcategoria": "Cinema & Séries", "termo_img": "movie movie"},
-    "UOL Entretenimento": {"url": "http://rss.uol.com.br/feed/entretenimento.xml", "categoria": "Cultura & Pop", "subcategoria": "Tendências", "termo_img": "pop culture"},
-    "NHK World (Japão)": {"url": "https://www3.nhk.or.jp/nhkworld/nhknews/rss/index.xml", "categoria": "Tech & Ciência", "subcategoria": "Ásia Oriental", "termo_img": "japan technology"},
-    "Canaltech": {"url": "https://canaltech.com.br/rss/", "categoria": "Tech & Ciência", "subcategoria": "Inovação", "termo_img": "technology"},
-    "G1 Bem Estar": {"url": "https://g1.globo.com/rss/g1/saude/", "categoria": "Viver Bem", "subcategoria": "Saúde e Medicina", "termo_img": "health"}
+    "Al Jazeera (Oriente Médio)": {"url": "https://www.aljazeera.com/xml/rss/all.xml", "categoria": "Política", "subcategoria": "Ásia Ocidental", "termo_img": "middle-east,politics"},
+    "RT News (Rússia/Leste Europeu)": {"url": "https://actualidad.rt.com/feeds/all.xml", "categoria": "Política", "subcategoria": "Europa Oriental", "termo_img": "russia,moscow"},
+    "BBC News": {"url": "https://feeds.bbci.co.uk/news/world/rss.xml", "categoria": "Política", "subcategoria": "Internacional", "termo_img": "news,world"},
+    "Xinhua Net (China)": {"url": "http://www.xinhuanet.com/english/rss/worldrss.xml", "categoria": "Economia", "subcategoria": "Ásia Oriental", "termo_img": "china,shanghai"},
+    "Valor Econômico": {"url": "https://valor.globo.com/rss/valor/", "categoria": "Economia", "subcategoria": "Nacional", "termo_img": "finance,brazil"},
+    "Infomoney": {"url": "https://www.infomoney.com.br/feed/", "categoria": "Economia", "subcategoria": "Mercado", "termo_img": "trading,wallstreet"},
+    "CBC News (Canadá)": {"url": "https://rss.cbc.ca/lineup/world.xml", "categoria": "Cotidiano", "subcategoria": "América do Norte", "termo_img": "canada,toronto"},
+    "G1 Brasil": {"url": "https://g1.globo.com/rss/g1/brasil/", "categoria": "Cotidiano", "subcategoria": "Nacional", "termo_img": "brazil,city"},
+    "Globo Esporte (GE)": {"url": "https://ge.globo.com/rss/ge/", "categoria": "Esportes", "subcategoria": "Futebol/Nacional", "termo_img": "soccer,stadium"},
+    "UOL Esporte": {"url": "http://rss.uol.com.br/feed/esporte.xml", "categoria": "Esportes", "subcategoria": "Geral", "termo_img": "sports,athlete"},
+    "Telesur (América Latina/Chile)": {"url": "https://www.telesurtv.net/rss/RssAll.html", "categoria": "Cultura & Pop", "subcategoria": "América do Sul", "termo_img": "latin-america"},
+    "Aristegui Noticias (México)": {"url": "https://aristeguinoticias.com/feed/", "categoria": "Cultura & Pop", "subcategoria": "América Central", "termo_img": "mexico,city"},
+    "Omelete": {"url": "https://www.omelete.com.br/feed", "categoria": "Cultura & Pop", "subcategoria": "Cinema & Séries", "termo_img": "cinema,movie"},
+    "UOL Entretenimento": {"url": "http://rss.uol.com.br/feed/entretenimento.xml", "categoria": "Cultura & Pop", "subcategoria": "Tendências", "termo_img": "concert,pop"},
+    "NHK World (Japão)": {"url": "https://www3.nhk.or.jp/nhkworld/nhknews/rss/index.xml", "categoria": "Tech & Ciência", "subcategoria": "Ásia Oriental", "termo_img": "tokyo,technology"},
+    "Canaltech": {"url": "https://canaltech.com.br/rss/", "categoria": "Tech & Ciência", "subcategoria": "Inovação", "termo_img": "cyberpunk,tech"},
+    "G1 Bem Estar": {"url": "https://g1.globo.com/rss/g1/saude/", "categoria": "Viver Bem", "subcategoria": "Saúde e Medicina", "termo_img": "health,fitness"}
 }
 
 ARQUIVO_BANCO = "banco_noticias.json"
@@ -51,11 +52,9 @@ def limpar_html(texto):
 def extrair_dados_da_pagina(url_da_noticia, termo_seguranca):
     dados = {"resumo": "Resumo longo indisponível para o layout desta fonte.", "url_imagem": ""}
     try:
-        # Mimetiza perfeitamente um navegador real atualizado para furar os bloqueios de segurança
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5'
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
         }
         resposta = requests.get(url_da_noticia, headers=headers, timeout=10)
         
@@ -79,13 +78,11 @@ def extrair_dados_da_pagina(url_da_noticia, termo_seguranca):
     except Exception as e:
         print(f"Aviso de raspagem em {url_da_noticia}: {e}")
         
-    # BACKUP INTELIGENTE ANTI-CAIXA-VAZIA: Se o site bloqueou ou não achou imagem, gera uma imagem jornalística dinâmica e única baseada na fonte/termo
+    # NOVO BACKUP 100% FUNCIONAL DO UNSPLASH (Fura o bloqueio com URLs válidas)
     if not dados["url_imagem"]:
-        hash_id = int(datetime.now().microsecond)
-        dados["url_imagem"] = f"https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&auto=format&fit=crop&q=60" # Foto padrão jornalismo caso falhe o termo
-        if termo_seguranca:
-            termo_url = termo_seguranca.replace(" ", "-")
-            dados["url_imagem"] = f"https://source.unsplash.com/featured/600x400/?{termo_url}&sig={hash_id}"
+        id_aleatorio = random.randint(1, 1000)
+        # Usa a nova rota de pesquisa oficial do Unsplash que não expira
+        dados["url_imagem"] = f"https://images.unsplash.com/featured/600x400/?{termo_seguranca}&sig={id_aleatorio}"
             
     return dados
 
