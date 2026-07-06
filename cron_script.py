@@ -5,9 +5,24 @@ import re
 from deep_translator import GoogleTranslator
 from datetime import datetime
 
+# Mapeamento de Fontes e suas Categorias
 FONTES_RSS = {
-    "Al Jazeera (Oriente Médio)": "https://www.aljazeera.com/xml/rss/all.xml",
-    "BBC News (Reino Unido)": "https://feeds.bbci.co.uk/news/world/rss.xml"
+    # == GEOPOLÍTICA E GLOBAIS ==
+    "Al Jazeera": {"url": "https://www.aljazeera.com/xml/rss/all.xml", "categoria": "GEOPOLÍTICA"},
+    "BBC News (Reino Unido)": {"url": "https://feeds.bbci.co.uk/news/world/rss.xml", "categoria": "INTERNACIONAL"},
+    
+    # == ECONOMIA E NEGÓCIOS ==
+    "Infomoney": {"url": "https://www.infomoney.com.br/feed/", "categoria": "ECONOMIA"},
+    "Valor Econômico": {"url": "https://valor.globo.com/rss/valor/", "categoria": "ECONOMIA"},
+    
+    # == ESPORTES ==
+    "Globo Esporte (GE)": {"url": "https://ge.globo.com/rss/ge/", "categoria": "ESPORTE"},
+    "UOL Esporte": {"url": "http://rss.uol.com.br/feed/esporte.xml", "categoria": "ESPORTE"},
+    
+    # == SAÚDE, CULTURA E VARIEDADES ==
+    "G1 Bem Estar": {"url": "https://g1.globo.com/rss/g1/saude/", "categoria": "SAÚDE E BEM-ESTAR"},
+    "Omelete": {"url": "https://www.omelete.com.br/feed", "categoria": "CULTURA E LAZER"},
+    "UOL Entretenimento": {"url": "http://rss.uol.com.br/feed/entretenimento.xml", "categoria": "VARIEDADES"}
 }
 
 ARQUIVO_BANCO = "banco_noticias.json"
@@ -37,9 +52,10 @@ def traduzir_noticia(titulo_org, texto_org):
         if not titulo_org: titulo_org = "Sem título"
         if not texto_org: texto_org = "Sem descrição disponível."
         
-        # PROTEÇÃO 2: Força a origem como Inglês ('en') para evitar que a detecção falhe
-        tradutor_pt = GoogleTranslator(source='en', target='pt')
-        tradutor_es = GoogleTranslator(source='en', target='es')
+        # PROTEÇÃO 2: 'auto' permite ler tanto fontes em PT quanto em EN sem misturar tudo
+        tradutor_pt = GoogleTranslator(source='auto', target='pt')
+        tradutor_es = GoogleTranslator(source='auto', target='es')
+        tradutor_en = GoogleTranslator(source='auto', target='en')
         
         titulo_pt = tradutor_pt.translate(titulo_org)
         texto_pt = tradutor_pt.translate(texto_org)
@@ -47,9 +63,12 @@ def traduzir_noticia(titulo_org, texto_org):
         titulo_es = tradutor_es.translate(titulo_org)
         texto_es = tradutor_es.translate(texto_org)
         
+        titulo_en = tradutor_en.translate(titulo_org)
+        texto_en = tradutor_en.translate(texto_org)
+        
         return {
             "titulo_pt": titulo_pt, "texto_pt": texto_pt,
-            "titulo_en": titulo_org, "texto_en": texto_org,
+            "titulo_en": titulo_en, "texto_en": texto_en,
             "titulo_es": titulo_es, "texto_es": texto_es
         }
     except Exception as e:
@@ -57,7 +76,7 @@ def traduzir_noticia(titulo_org, texto_org):
         # Se a tradução falhar, retorna o texto original com aviso em vez de quebrar o site
         return {
             "titulo_pt": f"⚠️ [Erro na Tradução] {titulo_org}", "texto_pt": str(e),
-            "titulo_en": titulo_org, "texto_en": texto_org,
+            "titulo_en": f"⚠️ [Translation Error] {titulo_org}", "texto_en": str(e),
             "titulo_es": f"⚠️ [Error de Traducción] {titulo_org}", "texto_es": str(e)
         }
 
@@ -67,13 +86,18 @@ def rodar_robo():
     novas_noticias = []
     
     cont_processadas = 0
-    for nome_fonte, url_rss in FONTES_RSS.items():
-        if cont_processadas >= 4:
+    # Nova estrutura de iteração lendo o Dicionário completo
+    for nome_fonte, dados_fonte in FONTES_RSS.items():
+        if cont_processadas >= 12: # Limite aumentado para cobrir mais fontes
             break
+            
+        url_rss = dados_fonte["url"]
+        categoria = dados_fonte["categoria"]
             
         try:
             feed = feedparser.parse(url_rss)
-            for entry in feed.entries[:3]:
+            # Pega apenas a 1ª notícia do topo para ser ágil e não dar Timeout no GitHub
+            for entry in feed.entries[:1]:
                 link = entry.get("link", "")
                 if not link or link in links_existentes:
                     continue
@@ -82,29 +106,33 @@ def rodar_robo():
                 resumo_cru = entry.get("summary", entry.get("description", ""))
                 texto_original = limpar_html(resumo_cru)
                 
+                print(f"Processando: {nome_fonte} | {categoria}...")
                 dados_traduzidos = traduzir_noticia(titulo_original, texto_original)
                 
                 item_noticia = {
                     "id": len(banco_atual) + len(novas_noticias) + 1,
                     "data": datetime.now().strftime("%d/%m/%Y %H:%M"),
                     "fonte_origem": nome_fonte,
+                    "categoria": categoria,
                     "link_origem": link,
                     "status": "APROVADO",
                     **dados_traduzidos
                 }
                 
                 novas_noticias.append(item_noticia)
+                links_existentes.add(link)
                 cont_processadas += 1
-                if cont_processadas >= 4:
-                    break
+                
         except Exception as erro_fonte:
             # PROTEÇÃO 3: Se uma fonte inteira cair, o robô pula para a próxima sem travar
             print(f"Erro ao processar a fonte {nome_fonte}: {erro_fonte}")
                 
     if novas_noticias:
         banco_atual.extend(novas_noticias)
+        # Proteção 4: Mantém apenas as últimas 150 matérias para o arquivo não ficar gigante
+        banco_atual = banco_atual[-150:] 
         salvar_banco(banco_atual)
-        print(f"Sucesso! {len(novas_noticias)} matérias processadas.")
+        print(f"Sucesso! {len(novas_noticias)} matérias processadas e categorizadas.")
     else:
         print("Nenhuma notícia nova encontrada.")
 
