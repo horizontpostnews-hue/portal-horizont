@@ -242,5 +242,47 @@
         "texto_en": "Endrick had the chance to open the scoring before the Brazilian team conceded two goals from Haaland against Norway, in their elimination from the 2026 World Cup. The striker regretted the wasted opportunity shortly after entering the field.",
         "titulo_es": "Endrick lamenta haber perdido un gol en la eliminación: ?Sé que podría hacerlo mejor?",
         "texto_es": "Endrick tuvo la oportunidad de abrir el marcador antes de que la selección brasileña encajara dos goles de Haaland ante Noruega, en su eliminación del Mundial de 2026. El delantero lamentó la oportunidad desperdiciada al poco de entrar al campo."
+    },
+    {
+        "id": 19,
+        "data": "06/07/2026 00:54",
+        "fonte_origem": "Al Jazeera",
+        "categoria": "GEOPOLÍTICA",
+        "link_origem": "https://www.aljazeera.com/sports/2026/7/6/belgium-astonished-at-fifas-u-turn-on-balogun-red-card-for-usa-match?traffic_source=rss",
+        "status": "APROVADO",
+        "titulo_pt": "Bélgica ‘surpresa’ com reviravolta da FIFA após cartão vermelho de Balogun para partida nos EUA",
+        "texto_pt": "A federação de futebol da Bélgica está “investigando todas as opções potenciais”. para proteger o futebol após a reviravolta da FIFA.",
+        "titulo_en": "Belgium ‘astonished’ at FIFA’s U-turn on Balogun red card for USA match",
+        "texto_en": "Belgium&#039;s football federation is &#039;investigating all potential options&#039; to safeguard football after FIFA&#039;s U-turn.",
+        "titulo_es": "Bélgica “asombrada” por el cambio de sentido de la FIFA sobre la tarjeta roja a Balogun para el partido de Estados Unidos",
+        "texto_es": "La federación belga de fútbol está \"investigando todas las opciones potenciales\" para solucionar el problema. para salvaguardar el fútbol tras el cambio de sentido de la FIFA."
+    },
+    {
+        "id": 20,
+        "data": "06/07/2026 00:54",
+        "fonte_origem": "Infomoney",
+        "categoria": "ECONOMIA",
+        "link_origem": "https://www.infomoney.com.br/esportes/neymar-da-indicios-de-que-se-aposentara-da-selecao-apos-derrota-para-a-noruega/",
+        "status": "APROVADO",
+        "titulo_pt": "Neymar dá indícios de que se aposentará da seleção após derrota para a Noruega",
+        "texto_pt": "O atacante converteu um pênalti nos acréscimos da derrota do Brasil por 2 x 1\nThe post Neymar dá indícios de que se aposentará da seleção após derrota para a Noruega appeared first on InfoMoney.",
+        "titulo_en": "Neymar hints he will retire from the national team after defeat to Norway",
+        "texto_en": "The striker converted a penalty in stoppage time in Brazil's 2-1 defeat\nThe post Neymar hints that he will retire from the national team after defeat to Norway appeared first on InfoMoney.",
+        "titulo_es": "Neymar insinúa que se retirará de la selección tras la derrota ante Noruega",
+        "texto_es": "El delantero convirtió un penalti en el tiempo añadido en la derrota de Brasil por 2-1.\nEl post Neymar insinúa que se retirará de la selección tras la derrota ante Noruega apareció por primera vez en InfoMoney."
+    },
+    {
+        "id": 21,
+        "data": "06/07/2026 00:54",
+        "fonte_origem": "UOL Esporte",
+        "categoria": "ESPORTE",
+        "link_origem": "https://www.uol.com.br/esporte/futebol/ultimas-noticias/2026/07/05/casemiro-eliminacao-copa.ghtm",
+        "status": "APROVADO",
+        "titulo_pt": "Casemiro desaba e chora após eliminação: 'Só quero estar com minha família'",
+        "texto_pt": "Um dos pilares de Carlo Ancelotti na seleção brasileira, Casemiro desabou em lágrimas após a eliminação do Brasil na Copa do Mundo. Ao ser questionado sobre qual mensagem deixaria para as crianças brasileiras que viram a eliminação, o volante ? que pode ter disputado seu último Mundial ? não segurou a emoção.",
+        "titulo_en": "Casemiro breaks down and cries after elimination: 'I just want to be with my family'",
+        "texto_en": "One of Carlo Ancelotti's pillars in the Brazilian team, Casemiro broke down in tears after Brazil's elimination from the World Cup. When asked what message he would leave for Brazilian children who saw the elimination, the steering wheel? who may have played in his last World Cup? He didn't hold back his emotion.",
+        "titulo_es": "Casemiro se derrumba y llora tras la eliminación: 'Sólo quiero estar con mi familia'",
+        "texto_es": "Casemiro, uno de los pilares de Carlo Ancelotti en la selección brasileña, rompió a llorar tras la eliminación de Brasil del Mundial. Cuando se le preguntó qué mensaje dejaría a los niños brasileños que vieron la eliminación, ¿el volante? ¿Quién pudo haber jugado en su último Mundial? No reprimió su emoción."
     }
 ]
