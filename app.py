@@ -201,7 +201,7 @@ def injetar_player_audio_correto(id_noticia, titulo, corpo, lang="pt-BR"):
     """
     return st.components.v1.html(html_audio, height=48, scrolling=False)
 
-# 🏆 1 & 2. PAINEL DE DADOS REAIS DA COPA DO MUNDO 2026 E DESTAQUES COM IMAGEM/VÍDEO
+# 🏆 PAINEL DE DADOS REAIS DA COPA DO MUNDO 2026 E DESTAQUES COM IMAGEM
 st.markdown(
     """
     <div class="copa-container">
@@ -213,7 +213,7 @@ st.markdown(
             <div class="copa-jogo-card">
                 <div style="font-size: 11px; color: #cbd5e1; font-weight: 600;">OITAVAS DE FINAL • SEATTLE</div>
                 <div style="font-weight: 700; font-size: 14px;">🇧🇪 Bélgica &nbsp;<span style="background:#0f172a; padding:1px 6px; border-radius:4px;">4 - 1</span>&nbsp; 🇺🇸 EUA</div>
-                <div style="font-size: 11px; color: #67e8f9; font-weight: 700; margin-top: 4px;">✔️ FIM DE JOGO</div>
+                <div style="font-size: 11px; color: #67e8f9; font-weight: 700; margin-top: 4px;">    FIM DE JOGO</div>
             </div>
             <div class="copa-jogo-card">
                 <div style="font-size: 11px; color: #cbd5e1; font-weight: 600;">FUTURO CONFRONTO • QUARTAS</div>
@@ -231,17 +231,16 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Seção de destaques discretos enriquecidos com mídia real (imagens/vídeos)
+# Seção de destaques discretos enriquecidos com mídia real
 with st.expander("⚽ DESTAQUES ESPECIAIS DA COPA — ANÁLISES & MULTIMÍDIA", expanded=True):
     col_midia, col_info = st.columns([1, 2])
     with col_midia:
-        # Exibição de imagem tática ou simulação em vídeo nativo
         st.image("https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500&auto=format&fit=crop", caption="Preparativos de alta intensidade nos estádios norte-americanos.", use_container_width=True)
     with col_info:
         st.markdown(
             """
             <div style="padding: 4px; font-size:14px; color:#1e293b;">
-                <b style="color:#881337;">🔥 Giro Técnico Semanal:</b> A esmagadora vitória da Bélgica sobre os donos da casa por 4 a 1 consolidou a força ofensiva europeia nesta reta final. 
+                <b style="color:#881337;">🔥 Giro Técnico Semanal:</b> A esmagadora vitória da Bélgica sobre os donos da casa por 4 a 1 consolidou a força ofensiva europeia nesta reta final no Lumen Field. 
                 <br><br>
                 <b>Protagonistas:</b> Charles De Ketelaere e Romelu Lukaku dominam as estatísticas de eficiência de passe de infiltração. No front brasileiro, protestos legítimos cobram reformas estruturais imediatas na gestão técnica da CBF após o encerramento precoce do ciclo da seleção.
             </div>
