@@ -3,7 +3,6 @@ import json
 import urllib.request
 import re
 from datetime import datetime
-import time
 
 st.set_page_config(
     page_title="horizont.news — Conectando Gerações",
@@ -87,7 +86,7 @@ st.markdown(
             cursor: pointer !important; 
             font-size: 14px !important; 
             list-style: none !important;
-            text-align: center !important; /* Centralização solicitada */
+            text-align: center !important; 
             display: block !important;
         }
         summary::-webkit-details-marker { display: none !important; }
@@ -156,7 +155,7 @@ def limpar_tags_e_higienizar(texto_bruto):
     texto_limpo = texto_limpo.replace('\n', ' ').replace('\r', ' ').replace("'", " ").replace('"', ' ')
     return texto_limpo.strip()
 
-# GENERATOR DO BOTÃO DE ÁUDIO OPERANTE ATRAVÉS DE Iframe Seguro (Evita bloqueio do Streamlit)
+# GENERATOR DO BOTÃO DE ÁUDIO OPERANTE (Correção de scrolling=False)
 def injetar_botao_audio(id_noticia, titulo, corpo, lang="pt-BR"):
     texto_completo = f"{titulo}. {corpo}"
     html_player = f"""
@@ -173,7 +172,7 @@ def injetar_botao_audio(id_noticia, titulo, corpo, lang="pt-BR"):
         </button>
     </div>
     """
-    return st.components.v1.html(html_player, height=48, scroller=False)
+    return st.components.v1.html(html_player, height=48, scrolling=False)
 
 # 🏆 ATUALIZAÇÃO AUTOMÁTICA DO PLACAR E HORÁRIOS DA COPA
 hora_atual = datetime.now().hour
@@ -196,7 +195,6 @@ else:
     status_j2, placar_j2 = "✔️ FIM DE JOGO", "0 - 0"
     status_j3, placar_j3 = "🔴 AO VIVO • 2º Tempo", "1 - 2"
 
-# RENDER DO WIDGET DA COPA DO MUNDO
 st.markdown(
     f"""
     <div class="copa-container">
@@ -226,7 +224,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# CARREGAMENTO DO FEED DE NOTÍCIAS
 noticias = ler_banco_dados_fresco()
 
 if noticias:
@@ -247,14 +244,12 @@ if noticias:
         st.markdown(f"<h1 style='color:#0f172a; font-size:26px; font-weight:800;'>{d_titulo}</h1>", unsafe_allow_html=True)
         st.markdown(f"<p class='texto-noticia'>{d_texto}</p>", unsafe_allow_html=True)
         
-        # Botão de Áudio Funcional
         injetar_botao_audio("destaque", d_titulo, d_texto, lang_audio)
         
-        # Acordeão com Título Centralizado
         with st.markdown("<details><summary>Ler matéria completa</summary></details>", unsafe_allow_html=True):
             st.markdown(f"<div style='padding:10px;'>{d_texto}</div>", unsafe_allow_html=True)
 
-    # 👥 2. DOIS COLUNAS DE CONTEÚDO
+    # 👥 2. DUAS COLUNAS
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     
@@ -270,10 +265,8 @@ if noticias:
                 st.markdown(f"<h3 class='titulo-noticia'>{titulo}</h3>", unsafe_allow_html=True)
                 st.markdown(f"<p class='texto-noticia'>{texto}</p>", unsafe_allow_html=True)
                 
-                # Botão de Áudio Funcional Individual
                 injetar_botao_audio(f"card_{idx}", titulo, texto, lang_audio)
                 
-                # Acordeão do Card Centralizado
                 html_card_acordeao = f"""
                 <details>
                     <summary>Ler matéria completa</summary>
