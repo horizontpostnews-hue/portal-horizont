@@ -75,12 +75,51 @@ st.markdown("""
         margin-top: 5px !important;
     }
 
-    /* Customização do Expander para evitar vazamento de Markdown */
+    /* Customização Absoluta dos Botões de Reação (Estilo Feed de Redes Sociais) */
+    .reaction-box div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        flex-direction: row !important;
+        width: 100% !important;
+    }
+    .reaction-box div[data-testid="column"] {
+        width: auto !important;
+        flex: none !important;
+        min-width: unset !important;
+    }
+    .reaction-box button {
+        width: auto !important;
+        white-space: nowrap !important;
+        padding: 6px 12px !important;
+        font-size: 0.85rem !important;
+        background-color: #f1f5f9 !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #334155 !important;
+        border-radius: 20px !important; /* Estilo pílula moderna */
+        transition: all 0.2s ease;
+    }
+    .reaction-box button:hover {
+        background-color: #e2e8f0 !important;
+        border-color: #cbd5e1 !important;
+        color: #0b1329 !important;
+    }
+
+    /* Estilização específica para o botão de compartilhar */
+    .share-btn button {
+        background-color: #0b1329 !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+    .share-btn button:hover {
+        background-color: #1e293b !important;
+        color: #00f5d4 !important;
+    }
+
     .stDetails {
         border: 1px solid #e2e8f0 !important;
         background-color: #ffffff !important;
         border-radius: 6px !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.02) !important;
     }
 
     .block-container {
@@ -90,7 +129,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Inicialização estável das variáveis de engajamento
+# Inicialização do Estado de Sessão
 if "engagement" not in st.session_state:
     st.session_state.engagement = {}
 
@@ -108,7 +147,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 2. BANNER INSTITUCIONAL DINÂMICO (FLUXO MÉDIO EM CSS)
+# 2. BANNER INSTITUCIONAL DINÂMICO
 # -----------------------------------------------------------------------------
 html_ticker_institutional = """
 <div style="background-color: #00f5d4; color: #0b1329; padding: 10px 0; overflow: hidden; white-space: nowrap; font-weight: 700; font-size: 0.95rem; border-bottom: 2px solid #0b1329;">
@@ -123,7 +162,7 @@ html_ticker_institutional = """
 components.html(html_ticker_institutional, height=42)
 
 # -----------------------------------------------------------------------------
-# 3. CARROSSEL DINÂMICO DE ÚLTIMAS NOTÍCIAS (FLUXO MODERADO)
+# 3. CARROSSEL DINÂMICO DE ÚLTIMAS NOTÍCIAS
 # -----------------------------------------------------------------------------
 html_ticker_news = """
 <div style="display: flex; background-color: #0b1329; border-radius: 4px; overflow: hidden; margin-top: 15px; margin-bottom: 20px; align-items: center;">
@@ -147,7 +186,7 @@ html_ticker_news = """
 components.html(html_ticker_news, height=45)
 
 # -----------------------------------------------------------------------------
-# 11. SESSÃO COPA DO MUNDO 2026 (VÍDEO PÚBLICO INTEGRADO)
+# 11. SESSÃO COPA DO MUNDO 2026
 # -----------------------------------------------------------------------------
 st.markdown("### 🏆 COPA DO MUNDO FIFA 2026 — BASTIDORES & CURIOSIDADES")
 with st.container():
@@ -203,7 +242,7 @@ tag_colors = {
 }
 
 # -----------------------------------------------------------------------------
-# BASE DE DADOS INTEGRADA — LIDES INTRODUTÓRIOS DE 3 A 4 LINHAS CRISTALINOS
+# BASE DE DADOS INTEGRADA
 # -----------------------------------------------------------------------------
 news_database = [
     {
@@ -224,7 +263,7 @@ news_database = [
         "date_source": "07/07/2026 23:36 • Fonte: Brasil 247",
         "image": "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=800&q=80",
         "lead": "Nos bastidores das principais coalizões partidárias para o próximo pleito majoritário, o nome do empresário Geraldo Rufino surge como um forte elemento agregador de centro-direita. A indicação atende à demanda explícita de governadores do bloco por uma figura de ampla aceitação no ecossistema de micro e pequenas empresas regionais. A costura final depende unicamente do aval formal das executivas nacionais, que analisam o impacto e o ganho de capilaridade em coligações do Sudeste.",
-        "extended_summary": "A aproximação do nome de Rufino para a chapa majoritária representa um movimento técnico calculated para suavizar discursos excessivamente corporativistas e trazer uma narrativa focada em resiliência socioeconômica e empreendedorismo de base. Setores estratégicos do Podemos sinalizam positivamente, enxergando na imagem pública do empresário um forte canal de diálogo direto com as periferias urbanas e com trabalhadores autônomos.<br><br>A estratégia de consolidação eleitoral agora entra na fase de alinhamento com frentes parlamentares de estados fundamentais. A expectativa de analistas é de que o anúncio pacifique as tensões regionais e estabeleça um palanque unificado de forte apelo popular, combinando o rigor de gestão fiscal com propostas focadas na geração orgânica de emprego e renda facilitada por incentivos estaduais."
+        "extended_summary": "A aproximação do nome de Rufino para a chapa majoritária representa um movimento técnico calculado para suavizar discursos excessivamente corporativistas e trazer uma narrativa focada em resiliência socioeconômica e empreendedorismo de base. Setores estratégicos do Podemos sinalizam positivamente, enxergando na imagem pública do empresário um forte canal de diálogo direto com as periferias urbanas e com trabalhadores autônomos.<br><br>A estratégia de consolidação eleitoral agora entra na fase de alinhamento com frentes parlamentares de estados fundamentais. A expectativa de analistas é de que o anúncio pacifique as tensões regionais e estabeleça um palanque unificado de forte apelo popular, combinando o rigor de gestão fiscal com propostas focadas na geração orgânica de emprego e renda facilitada por incentivos estaduais."
     },
     {
         "id": "news_3",
@@ -250,7 +289,6 @@ st.markdown("### 📰 COBERTURA INTEGRADA GLOBAL")
 for item in filtered_news:
     colors = tag_colors.get(item["category"], {"bg": "#e2e8f0", "text": "#475569"})
     
-    # Renderização estruturada do cabeçalho do Card
     st.markdown(f"""
     <div style="background-color: white; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;">
         <span style="background-color: {colors['bg']}; color: {colors['text']}; display: inline-block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; letter-spacing: 0.5px;">
@@ -266,11 +304,9 @@ for item in filtered_news:
         st.image(item["image"], use_container_width=True)
         
     with col_txt:
-        # Lide fluido jornalístico calibrado em 3 a 4 linhas estruturadas
         st.markdown(f"<p style='font-size:1.08rem !important; font-weight:500; color:#1e293b; line-height:1.6; margin-top:0; margin-bottom:12px; text-align:justify;'>{item['lead']}</p>", unsafe_allow_html=True)
         st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
         
-        # Expansor limpo de vazamento textual
         with st.expander("📖 LER A MATÉRIA COMPLETA — ANÁLISE EDITORIAL"):
             st.markdown(f"""
             <div style="background-color: #fafafa; border-left: 4px solid #0b1329; padding: 15px; font-size: 1.05rem !important; line-height: 1.6; color: #1e293b; text-align: justify;">
@@ -280,22 +316,19 @@ for item in filtered_news:
             """, unsafe_allow_html=True)
         
         # -----------------------------------------------------------------
-        # 16 e 17. SISTEMA DE REAÇÕES EM COMPONENTE INTEGRADO (FLEX-GRID ANTI-QUEBRA)
+        # ÁREA DE REAÇÕES PROTEGIDA CONTRA EMPILHAMENTO NO MOBILE
         # -----------------------------------------------------------------
-        st.markdown("<div style='margin-top:12px; margin-bottom:8px; font-size:0.8rem; font-weight:600; color:#64748b; text-transform:uppercase;'>Avaliação de Relevância Editorial:</div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top:14px; margin-bottom:8px; font-size:0.8rem; font-weight:600; color:#64748b; text-transform:uppercase;'>Avaliação de Relevância Editorial:</div>", unsafe_allow_html=True)
         
         reactions = ["Alta Relevância", "Crítico", "Emocionante", "Inspirador", "Exige reflexão"]
         if item["id"] not in st.session_state.engagement:
             st.session_state.engagement[item["id"]] = {r: 0 for r in reactions}
             
-        # Criação de um Grid Flexível Real em HTML/CSS para os botões nunca quebrarem verticalmente no mobile
-        # Cada botão executa um clique real mapeado de forma nativa no ecossistema
-        button_container_start = """<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">"""
-        buttons_html = ""
+        # Encapsulamento em div customizada para forçar comportamento inline contínuo
+        st.markdown('<div class="reaction-box">', unsafe_allow_html=True)
         
-        # Renderização dos botões usando um seletor nativo compacto do Streamlit modificado por CSS inline
-        # Para manter a reatividade estável sem colunas gigantes, usamos pequenos radio ou botões compactos enfileirados:
-        sub_cols = st.columns(6)
+        # Geramos colunas falsas de tamanho 1 para que fiquem juntas no flexbox interceptado pelo CSS superior
+        sub_cols = st.columns(len(reactions) + 1)
         for idx, reaction in enumerate(reactions):
             with sub_cols[idx]:
                 current_count = st.session_state.engagement[item["id"]][reaction]
@@ -305,7 +338,8 @@ for item in filtered_news:
                     time.sleep(0.3)
                     st.rerun()
                     
-        with sub_cols[5]:
+        with sub_cols[len(reactions)]:
+            st.markdown('<div class="share-btn">', unsafe_allow_html=True)
             if st.button("📢 Compartilhar", key=f"sh_{item['id']}"):
                 components.html(f"""
                 <script>
@@ -314,11 +348,14 @@ for item in filtered_news:
                 </script>
                 """, height=0, width=0)
                 st.success("Copiado!")
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("<br><hr style='border: 0; border-top: 1px solid #e2e8f0; margin: 10px 0;'><br>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# CRÉDITOS DO VEÍCULO (RODAPÉ INSTITUCIONAL E CONFORMIDADE JURÍDICA)
+# CRÉDITOS DO VEÍCULO (RODAPÉ)
 # -----------------------------------------------------------------------------
 st.markdown("""
 <div style="background-color: #0b1329; color: #94a3b8; padding: 40px 20px; border-top: 4px solid #ffbc42; border-radius: 8px 8px 0 0; font-size: 0.9rem; margin-top: 40px;">
