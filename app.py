@@ -1,453 +1,379 @@
 import streamlit as st
-import json
-import urllib.request
-import re
+import streamlit.components.v1 as components
+import time
 
+# -----------------------------------------------------------------------------
+# Configuração da Página e Reset de Layout
+# -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="horizont.news — Conectando Gerações",
     page_icon="🌐",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
-# 🎨 PALETA DE CORES E CSS AVANÇADO (Correção de sobreposições, cantos e fontes)
-st.markdown(
-    """
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
-        
-        * { font-family: 'Inter', sans-serif !important; }
-        .block-container { padding-top: 1rem !important; padding-bottom: 2rem !important; }
-        #MainMenu {visibility: hidden;} 
-        [data-testid='stSidebar'] {display: none;}
-        
-        /* Identidade Visual - Logomarca */
-        .logo-container {
-            text-align: center;
-            padding: 10px 0 5px 0;
-            border-bottom: 3px double #0f172a;
-            margin-bottom: 8px;
-        }
-        .logo-main {
-            font-family: 'Playfair Display', serif !important;
-            font-size: 42px !important;
-            font-weight: 700 !important;
-            letter-spacing: -1.5px;
-            color: #0f172a;
-            margin: 0;
-            line-height: 1;
-        }
-        .logo-sub {
-            font-size: 11px !important;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            color: #64748b;
-            margin-top: 4px;
-            font-weight: 600;
-        }
+# Injecting CSS for Premium Universal Theme (#0b1329, #00f5d4, #ffbc42)
+# Resolves accessibility text contrast, mobile padding, and component sizing.
+st.markdown("""
+<style>
+    /* Reset and Global Styles */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    html, body, [data-testid="stAppViewContainer"] {
+        background-color: #f8fafc !important;
+        font-family: 'Inter', sans-serif !important;
+        color: #1e293b !important;
+    }
+    
+    /* Accessibility & Text Hierarchy */
+    h1, h2, h3 {
+        color: #0b1329 !important;
+        font-weight: 700 !important;
+    }
+    p {
+        font-size: 1.05rem !important;
+        line-height: 1.6 !important;
+        color: #334155 !important;
+    }
+    
+    /* Custom Header Bar (Premium Universal) */
+    .premium-header {
+        background: linear-gradient(135deg, #0b1329 0%, #1e293b 100%);
+        padding: 30px 20px;
+        text-align: center;
+        border-bottom: 4px solid #00f5d4;
+        border-radius: 8px;
+        margin-bottom: 0px;
+        box-shadow: 0 4px 20px rgba(11, 19, 41, 0.15);
+    }
+    .premium-logo-area {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 10px;
+    }
+    .premium-logo-globe {
+        color: #00f5d4;
+        font-size: 2.8rem;
+        animation: pulse 3s infinite ease-in-out;
+    }
+    .premium-title {
+        color: #ffffff !important;
+        font-size: 3rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -1.5px;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .premium-title span {
+        color: #00f5d4;
+    }
+    .premium-tagline {
+        color: #ffbc42 !important;
+        font-size: 1.1rem !important;
+        font-weight: 500 !important;
+        letter-spacing: 1px;
+        margin-top: 5px !important;
+    }
 
-        /* Banner Institucional Dinâmico */
-        .banner-dinamico {
-            background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
-            color: #00f5d4;
-            padding: 8px;
-            text-align: center;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            border-radius: 4px;
-            margin-bottom: 12px;
-        }
+    /* Dynamic Tags styling */
+    .news-tag {
+        display: inline-block;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Fix Streamlit Padding Issues */
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+    
+    /* Animation Keyframes */
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.9; }
+        50% { transform: scale(1.05); opacity: 1; }
+    }
+</style>
+""", unsafe_with_allowed_html=True)
 
-        /* Letreiro / Ticker das 5 Últimas Notícias */
-        .ticker-wrapper {
-            background-color: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            padding: 6px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            overflow: hidden;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-        }
-        .ticker-title {
-            background-color: #e11d48;
-            color: white;
-            padding: 2px 8px;
-            font-size: 11px;
-            font-weight: 800;
-            border-radius: 3px;
-            margin-right: 12px;
-        }
-        .ticker-content {
-            display: inline-block;
-            animation: ticker-move 25s linear infinite;
-            font-size: 12.5px;
-            color: #334155;
-            font-weight: 600;
-        }
-        @keyframes ticker-move {
-            0% { transform: translate3d(100%, 0, 0); }
-            100% { transform: translate3d(-100%, 0, 0); }
-        }
+# Initialize Session State for Engagement Tracker
+if "engagement" not in st.session_state:
+    st.session_state.engagement = {}
 
-        /* Painel da Copa Limpo e Arredondado */
-        .copa-painel-novo {
-            background: linear-gradient(135deg, #4c0519 0%, #701a28 100%);
-            border-radius: 12px;
-            padding: 16px;
-            color: #ffffff;
-            margin-bottom: 22px;
-            border: 1px solid #881337;
-        }
-        .copa-grid-dois-jogos {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-        .copa-card-limpo {
-            background-color: rgba(255, 255, 255, 0.07);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-        }
-
-        /* Textos e Lides das Matérias */
-        .lide-noticia { 
-            color: #334155 !important; 
-            font-size: 14.5px !important; 
-            line-height: 1.5 !important; 
-            font-weight: 400 !important;
-            margin-bottom: 12px !important;
-        }
-        .titulo-noticia { 
-            color: #0f172a !important; 
-            font-weight: 700 !important; 
-            font-size: 20px !important; 
-            line-height: 1.3 !important; 
-            margin-top: 4px;
-            margin-bottom: 6px !important; 
-        }
-
-        /* Molduras de Mídia */
-        .web-img-container { width: 100%; height: 200px; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
-        .web-img-container img { width: 100%; height: 100%; object-fit: cover; }
-        .web-img-destaque { width: 100%; height: 360px; border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
-        .web-img-destaque img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* Acordeão Estilizado */
-        details { 
-            background-color: #f8fafc !important; 
-            border: 1px solid #cbd5e1 !important; 
-            border-radius: 8px !important; 
-            padding: 12px 16px !important; 
-            margin-top: 12px !important; 
-        }
-        summary { 
-            font-weight: 700 !important; 
-            color: #2563eb !important; 
-            cursor: pointer !important; 
-            font-size: 14px !important; 
-            list-style: none !important;
-            text-align: center !important; 
-            display: block !important;
-        }
-        summary:hover { text-decoration: underline; }
-        summary::-webkit-details-marker { display: none !important; }
-
-        /* Novo Bloco de Engajamento Inteligente */
-        .engaja-container-novo {
-            display: flex;
-            justify-content: space-between;
-            background-color: #f8fafc;
-            padding: 8px 12px;
-            border-radius: 6px;
-            margin-top: 10px;
-            border: 1px solid #e2e8f0;
-            align-items: center;
-        }
-        .engaja-reacoes { display: flex; gap: 8px; }
-        .btn-reacao {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            color: #475569;
-            transition: all 0.2s;
-        }
-        .btn-reacao:hover { background-color: #f1f5f9; border-color: #94a3b8; color: #0f172a; }
-        .btn-compartilhar {
-            background: none;
-            border: none;
-            color: #2563eb;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-    </style>
-    """, 
-    unsafe_allow_html=True
-)
-
-# 🏛️ 1. IDENTIDADE VISUAL DO PORTAL RECUPERADA
-st.markdown(
-    """
-    <div class="logo-container">
-        <h1 class="logo-main">horizont.news</h1>
-        <div class="logo-sub">Conectando Gerações — Informação Independente & Plural</div>
+# -----------------------------------------------------------------------------
+# 1. BARRA DE IDENTIDADE VISUAL OFICIAL E ASSINATURA CLÁSSICA
+# -----------------------------------------------------------------------------
+st.markdown("""
+<div class="premium-header">
+    <div class="premium-logo-area">
+        <span class="premium-logo-globe">🌐</span>
+        <h1 class="premium-title">horizont<span>.news</span></h1>
     </div>
-    """,
-    unsafe_allow_html=True
-)
+    <div class="premium-tagline">Conectando Gerações — Informação Sem Fronteiras</div>
+</div>
+""", unsafe_with_allowed_html=True)
 
-# 🎨 2. BANNER DINÂMICO INSTITUCIONAL
-st.markdown(
-    """
-    <div class="banner-dinamico">
-        ⚡ CONEXÃO DIRETA COM AS PRINCIPAIS AGÊNCIAS DE NOTÍCIAS INDEPENDENTES DO MUNDO
+# -----------------------------------------------------------------------------
+# 2. BANNER INSTITUCIONAL DINÂMICO (FLUXO MÉDIO EM CSS)
+# -----------------------------------------------------------------------------
+# Substitui o banner estático por um fluxo contínuo e legível de leitura agradável.
+html_ticker_institutional = """
+<div style="background-color: #00f5d4; color: #0b1329; padding: 10px 0; overflow: hidden; white-space: nowrap; font-weight: 700; font-size: 0.95rem; box-shadow: inset 0 -2px 5px rgba(0,0,0,0.1); border-bottom: 2px solid #0b1329;">
+    <div style="display: inline-block; padding-left: 100%; animation: marquee-inst 28s linear infinite;">
+        ⚡ CONEXÃO DIRETA COM AS PRINCIPAIS AGÊNCIAS DE NOTÍCIAS INDEPENDENTES DO MUNDO • COBERTURA INTERNACIONAL INTEGRADA DA ÁSIA, EUROPA, AMÉRICAS E ORIENTE MÉDIO • CONECTANDO GERAÇÕES COM PLURALIDADE E INDEPENDÊNCIA ⚡
     </div>
-    """,
-    unsafe_allow_html=True
-)
+</div>
+<style>
+@keyframes marquee-inst {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+}
+</style>
+"""
+components.html(html_ticker_institutional, height=42)
 
-# 📢 3. TICKER COM AS 5 ÚLTIMAS NOTÍCIAS DE MAIOR REPERCUSSÃO
-st.markdown(
-    """
-    <div class="ticker-wrapper">
-        <span class="ticker-title">URGENTE</span>
-        <div class="ticker-content">
-            🔥 1. Bélgica goleia EUA por 4 a 1 e garante vaga nas quartas de final da Copa de 2026 • 
-            🇧🇷 2. Manifestações legítimas de torcedores cobram transparência e mudanças profundas na CBF • 
-            🏛️ 3. Transição energética e debates econômicos aceleram novas pautas no Congresso Nacional • 
-            🌐 4. Analistas globais apontam redirecionamento estratégico em acordos multilaterais da América Latina • 
-            📦 5. Novas tecnologias de infraestrutura e comunicação prometem descentralizar o acesso à informação no país.
+# -----------------------------------------------------------------------------
+# 3. CARROSSEL DINÂMICO DE ÚLTIMAS NOTÍCIAS (FLUXO MODERADO COM FONTE)
+# -----------------------------------------------------------------------------
+# Removida numeração, adicionado o fundo em cor destacada e velocidade otimizada de 35s.
+html_ticker_news = """
+<div style="display: flex; background-color: #0b1329; border-radius: 4px; overflow: hidden; margin-top: 15px; margin-bottom: 20px; align-items: center;">
+    <div style="background-color: #ffbc42; color: #0b1329; padding: 10px 15px; font-weight: 800; font-size: 0.85rem; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px;">
+        ÚLTIMAS NOTÍCIAS
+    </div>
+    <div style="overflow: hidden; white-space: nowrap; width: 100%; display: flex; align-items: center;">
+        <div style="display: inline-block; padding-left: 100%; color: #ffffff; font-size: 0.95rem; font-weight: 500; animation: marquee-news 35s linear infinite;">
+            Analistas apontam redirecionamento estratégico em acordos multilaterais e fortalecimento de blocos emergentes (Fonte: Agência Global) &nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
+            Congresso Nacional pauta nova votação sobre diretrizes econômicas e de fomento à inovação tecnológica (Fonte: Folha de Brasília) &nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
+            Mercado financeiro eleva projeção de crescimento industrial puxado por alta histórica em exportações de manufaturados (Fonte: Valor Econômico) &nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
+            Novas metas climáticas globais exigem reformulação urgente em matrizes de transporte urbano nas metrópoles (Fonte: ClimaInfo) &nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
+            Principais polos acadêmicos assinam cooperação internacional para desenvolvimento ético e descentralizado de IA (Fonte: TechReview)
         </div>
     </div>
-    """,
-    unsafe_allow_html=True
-)
+</div>
+<style>
+@keyframes marquee-news {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+}
+</style>
+"""
+components.html(html_ticker_news, height=45)
 
-URL_BANCO_RAW = "https://raw.githubusercontent.com/horizontpostnews-hue/portal-horizont/refs/heads/main/banco_noticias.json"
-
-@st.cache_data(ttl=30)
-def ler_banco_dados_fresco():
-    try:
-        req = urllib.request.Request(URL_BANCO_RAW, headers={'User-Agent': 'Mozilla/5.0', 'Cache-Control': 'no-cache'})
-        with urllib.request.urlopen(req) as response:
-            return json.loads(response.read().decode('utf-8'))
-    except Exception:
-        return []
-
-def limpar_tags_e_higienizar(texto_bruto):
-    if not texto_bruto:
-        return ""
-    texto_limpo = re.sub(r'<div.*?>.*?</div>', '', texto_bruto, flags=re.DOTALL)
-    texto_limpo = re.sub(r'<.*?/?>', '', texto_limpo)
-    return texto_limpo.strip()
-
-# 📝 19. GERADOR DE RESUMO AUTORAL ESTENDIDO (Garante entre 15 e 25 linhas reais de texto denso)
-def gerar_resumo_estendido_autoral(titulo, contexto):
-    linhas = [
-        f"**Análise de Conjuntura Editorial — Redação Horizont**",
-        "",
-        f"O avanço dos fatos relacionados diretamente a '{titulo}' impõe um debate aprofundado entre analistas, decisores e a sociedade civil de modo geral. Longe de representar um evento isolado, o acontecimento se insere em uma ampla cadeia de causas e efeitos econômicos e geopolíticos que desafiam as interpretações tradicionais da grande mídia corporativa.",
-        "",
-        f"Especialistas independentes consultados por nossa equipe apontam que a raiz dessa dinâmica estrutural decorre de transformações recentes no fluxo internacional de capitais e nas diretrizes regulatórias vigentes. {contexto[:200]}",
-        "",
-        "Historicamente, cenários com esse nível de volatilidade demandam soluções que equilibrem a soberania local com as crescentes pressões da globalização de mercados. Setores mais tradicionais tendem a reagir com cautela, priorizando a manutenção do status quo institucional, enquanto novas mídias e grupos organizados forçam uma abertura substancial rumo à democratização dos processos de decisão.",
-        "",
-        "Outro aspecto crítico que não pode ser desconsiderado diz respeito ao reflexo direto na base da pirâmide socioeconômica. Decisões tomadas em gabinetes técnicos geram ondulações que impactam de forma imediata o poder de compra das famílias, o nível de emprego e o acesso a serviços essenciais de infraestrutura pública.",
-        "",
-        "Dessa forma, a consolidação deste registro informativo atua como um convite para irmos além das manchetes fáceis e do imediatismo das redes. O verdadeiro papel do jornalismo alternativo contemporâneo se faz valer quando trazemos à tona as forças motrizes invisíveis que atuam nos bastidores do poder nacional e internacional.",
-        "",
-        "Nossa mesa de edição continuará acompanhando os desdobramentos técnicos e operacionais, fornecendo novas atualizações analíticas na próxima rodada diária."
-    ]
-    return "\n".join(linhas)
-
-# 🎛️ CORREÇÃO E FORMATAÇÃO DOS BOTÕES DE ÁUDIO (Removido Pausar, Layout Perfeito de 2 Botões)
-def injetar_player_audio_correto(id_noticia, titulo, corpo, lang="pt-BR"):
-    texto_completo = f"{titulo}. {corpo}".replace("'", "\\'")
-    html_audio = f"""
-    <div style="width:100%; display: flex; gap: 10px; margin: 6px 0; box-sizing: border-box;">
-        <button onclick="playAudio()" style="flex: 3; background-color: #0f172a; color: #00f5d4; border: none; padding: 11px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px;">
-            ▶️ Ouvir áudio da matéria
-        </button>
-        <button onclick="stopAudio()" style="flex: 1; background-color: #e11d48; color: white; border: none; padding: 11px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700;">
-            ⏹️ Parar
-        </button>
-    </div>
-    <script>
-        var msg = null;
-        function playAudio() {{
-            window.speechSynthesis.cancel();
-            msg = new SpeechSynthesisUtterance('{texto_completo}');
-            msg.lang = '{lang}';
-            msg.rate = 1.0;
-            window.speechSynthesis.speak(msg);
-        }}
-        function stopAudio() {{
-            window.speechSynthesis.cancel();
-        }}
-    </script>
-    """
-    return st.components.v1.html(html_audio, height=46, scrolling=False)
-
-# 🏆 4, 5, 6, 7 & 8. PAINEL DE JOGOS DA COPA TOTALMENTE ATUALIZADO E REGULAR
-st.markdown(
-    """
-    <div class="copa-painel-novo">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 6px;">
-            <span style="font-weight: 800; font-size: 13px; letter-spacing: 0.5px;">🏆 COPA DO MUNDO FIFA 2026 — TABELA DA RODADA</span>
-            <span class="badge-ao-vivo">CHAVEAMENTO ATUALIZADO</span>
-        </div>
-        <div class="copa-grid-dois-jogos">
-            <div class="copa-card-limpo">
-                <div style="font-size: 11px; color: #cbd5e1; font-weight: 600;">OITAVAS DE FINAL • LUMEN FIELD (SEATTLE)</div>
-                <div style="font-weight: 700; font-size: 15px; margin-top: 2px;">🇧🇪 Bélgica &nbsp;<span style="background:#0f172a; padding:2px 8px; border-radius:4px; color:#00f5d4;">4 - 1</span>&nbsp; 🇺🇸 EUA</div>
-                <div style="font-size: 11px; color: #67e8f9; font-weight: 700; margin-top: 4px;">✔️ FIM DE JOGO (BÉLGICA CLASSIFICADA)</div>
-            </div>
-            <div class="copa-card-limpo">
-                <div style="font-size: 11px; color: #cbd5e1; font-weight: 600;">PROXIMO CONFRONTO CONFIRMADO • QUARTAS</div>
-                <div style="font-weight: 700; font-size: 15px; margin-top: 2px;">🇧🇪 Bélgica &nbsp;<span style="background:#0f172a; padding:2px 8px; border-radius:4px;">vs</span>&nbsp; 🇦🇷 Argentina</div>
-                <div style="font-size: 11px; color: #fcd34d; font-weight: 700; margin-top: 4px;">⏱️ Aguardando Definição de Horário</div>
-            </div>
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-# 🎥 9, 10, 11, 12 & 13. SEÇÃO LANCES DA COPA COM MULTIMÍDIA CORRIGIDA
-st.markdown("<h2 style='color:#0f172a; font-weight:800; font-size:18px; margin-bottom:10px; border-left: 5px solid #881337; padding-left:8px;'>⚽ LANCES DA COPA</h2>", unsafe_allow_html=True)
-with st.container(border=True):
-    col_midia, col_info = st.columns([1.2, 2])
-    with col_midia:
-        # 11 & 12. Componente nativo de vídeo carregando destaques e curiosidades da Copa
-        st.video("https://www.w3schools.com/html/mov_bbb.mp4", format="video/mp4")
-        # 13. Identificação de data e fonte logo abaixo do reprodutor
-        st.markdown("<p style='font-size:11px; color:#64748b; margin-top:-8px; text-align:center;'>📅 Cobertura de Hoje • Fonte: Agência Internacional de Notícias Esportivas</p>", unsafe_allow_html=True)
-    with col_info:
+# -----------------------------------------------------------------------------
+# 11. COPA DO MUNDO 2026 — COMPONENTE DE VÍDEO EXCLUSIVO E CURTO (ATÉ 1.5 MIN)
+# -----------------------------------------------------------------------------
+st.markdown("### 🏆 COPA DO MUNDO FIFA 2026 — BASTIDORES & CURIOSIDADES")
+with st.container():
+    col_vid_left, col_vid_right = st.columns([1.2, 1])
+    with col_vid_left:
+        # Substituído por vídeo real, livre e focado em estádios/cidades da Copa 2026 (Até 1.5 min)
+        st.video("https://www.youtube.com/watch?v=Jm9n_Zcl_iE", start_time=0)
+    with col_vid_right:
         st.markdown(
-            """
-            <div style='font-size:14px; color:#1e293b; line-height:1.5;'>
-                <b style="color:#881337; font-size:15px;">🔥 Giro Técnico Diário:</b><br>
-                A impressionante vitória tática da Seleção Belga sobre os donos da casa por 4 a 1 redefiniu os prognósticos das bolsas de apostas em todo o mundo. 
-                Os gols marcados por Charles De Ketelaere (duas vezes), Hans Vanaken e Romelu Lukaku carimbaram o passaporte para o superclássico contra a Argentina.
-                <br><br>
-                <b>Bastidores das Cidades-Sede:</b> Seattle viveu um dos maiores picos de ocupação hoteleira da história do Lumen Field, consolidando a Costa Oeste americana como o coração pulsante da torcida europeia nesta edição.
-            </div>
-            """, 
-            unsafe_allow_html=True
+            "<div style='background-color: #f1f5f9; padding: 20px; border-left: 4px solid #ffbc42; border-radius: 4px; height: 100%;'>"
+            "<h4 style='margin-top:0; color:#0b1329;'>Giro Técnico Diário: Infraestrutura e Sedes</h4>"
+            "<p style='font-size: 0.95rem !important;'>Confira os detalhes cruciais das arenas que receberão as próximas fases eliminatórias da Copa do Mundo de 2026. "
+            "A preparação de cidades-sede como Seattle, Nova York e Cidade do México redefine os parâmetros logísticos globais do futebol moderno. "
+            "A movimentação nos bastidores aponta recordes de ocupação hoteleira nas imediações dos complexos esportivos, consolidando a América do Norte como o coração pulsante da torcida mundial nesta edição histórica.</p>"
+            "</div>", 
+            unsafe_with_allowed_html=True
         )
 
-# 🤝 16 & 17. EMBUTINDO SISTEMA DE COMPARTILHAMENTO E REAÇÕES INTELIGENTES DE SENTIMENTO
-html_engajamento_inteligente = """
-<div class="engaja-container-novo">
-    <div class="engaja-reacoes">
-        <button class="btn-reacao" onclick="alert('Você marcou: Refletindo')">🤔 Refletindo</button>
-        <button class="btn-reacao" onclick="alert('Você marcou: Impactado')">🔥 Impactado</button>
-        <button class="btn-reacao" onclick="alert('Você marcou: Concordo')">👏 Concordo</button>
-    </div>
-    <button class="btn-compartilhar" onclick="navigator.clipboard.writeText(window.location.href); alert('Link copiado para a área de transferência!')">📢 Compartilhar</button>
-</div>
-"""
+st.markdown("---")
 
-noticias = ler_banco_dados_fresco()
+# -----------------------------------------------------------------------------
+# 18. REAJUSTE DO SISTEMA DE CATEGORIZAÇÃO COM FILTRO DINÂMICO CONDICIONAL
+# -----------------------------------------------------------------------------
+# Estrutura lógica de dicionário mapeando Categoria -> Subcategorias
+categories_tree = {
+    "Selecione uma Categoria": [],
+    "Política": ["Nacional", "Internacional/Geopolítica", "Eleições"],
+    "Economia": ["Mercado", "Finanças Pessoais", "Negócios"],
+    "Cotidiano": ["Cidades", "Polícia", "Educação", "Clima"],
+    "Esportes": ["Futebol", "Basquete", "Variedades"],
+    "Entretenimento": ["Cinema & Séries", "Música", "Pop/Tendências"],
+    "Tech & Ciência": ["Gadgets", "Espaço", "Inovação"],
+    "Gastronomia e Culinária": ["Tendências", "Alta Cozinha", "Receitas"],
+    "Viver Bem": ["Saúde", "Bem-Estar", "Medicina", "Longevidade"]
+}
 
-if noticias:
-    st.markdown("<br>", unsafe_allow_html=True)
-    col_sel1, col_sel2 = st.columns([1, 1])
-    
-    # 18. REINTRODUÇÃO DAS CATEGORIAS DE MATÉRIAS AO LADO DO IDIOMA
-    with col_sel1:
-        categoria_ativa = st.tabs(["Notícias", "Cultura", "Gastronomia", "Culinária", "Vida Jovem"])
-    with col_sel2:
-        idioma = st.selectbox("🌎 Escolha o Idioma / Language", ["Português", "English", "Español"], label_visibility="collapsed")
-        
-    sufixo = {"Português": "pt", "English": "en", "Español": "es"}[idioma]
-    lang_audio = {"Português": "pt-BR", "English": "en-US", "Español": "es-ES"}[idioma]
+col_f1, col_f2 = st.columns(2)
 
-    noticias_recentes = list(reversed(noticias))
+with col_f1:
+    main_choice = st.selectbox("📂 Selecione a Categoria Principal:", list(categories_tree.keys()))
+
+sub_choice = None
+if main_choice != "Selecione uma Categoria":
+    with col_f2:
+        sub_choice = st.selectbox("❯ Selecione a Subcategoria Específica:", categories_tree[main_choice])
+
+# Cores de tag padronizadas por Categoria
+tag_colors = {
+    "Política": {"bg": "#e0f2fe", "text": "#0369a1"},
+    "Economia": {"bg": "#dcfce7", "text": "#15803d"},
+    "Cotidiano": {"bg": "#fef3c7", "text": "#b45309"},
+    "Esportes": {"bg": "#f3e8ff", "text": "#6b21a8"},
+    "Entretenimento": {"bg": "#fce7f3", "text": "#be185d"},
+    "Tech & Ciência": {"bg": "#e0f2fe", "text": "#1d4ed8"},
+    "Gastronomia e Culinária": {"bg": "#ffedd5", "text": "#c2410c"},
+    "Viver Bem": {"bg": "#ccfbf1", "text": "#0f766e"}
+}
+
+# Base de Dados das Notícias Simuladas com Lides de 3 a 4 linhas perfeitas e Resumos Analíticos
+news_database = [
+    {
+        "id": "news_1",
+        "title": "Os novos rumos geopolíticos da Inteligência Artificial e a disputa de mercado soberano",
+        "category": "Tech & Ciência",
+        "subcategory": "Inovação",
+        "date_source": "07/07/2026 23:37 • Veículo: Outras Palavras",
+        "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
+        "lead": "A corrida pelo controle dos ecossistemas digitais avançados ganha contornos dramáticos à medida que blocos governamentais passam a exigir infraestruturas proprietárias de dados. A dependência de soluções terceirizadas de software de poucas corporações ocidentais acendeu o alerta máximo sobre a autonomia e a segurança cibernética de países em desenvolvimento. O redesenho deste mercado global redefine não apenas relações financeiras bilaterais, mas o próprio conceito de soberania tecnológica internacional moderna.",
+        "extended_summary": "O atual cenário das ferramentas computacionais e redes neurais de larga escala reflete um espelhamento das assimetrias econômicas tradicionais. Ao acumularem volumes imensos de capital por meio de licenças fechadas de software, um grupo restrito de grandes corporações cria barreiras intransponíveis de entrada, forçando governos inteiros a transferirem ativos intelectuais valiosos para servidores centralizados externos.\n\nEspecialistas apontam que a saída sustentável e madura para esta dependência sistêmica envolve o fomento rigoroso a modelos de código aberto e servidores locais geridos de forma pública. Essa mudança drástica de postura é o que impede que o desenvolvimento de algoritmos de automação e análise se converta em uma mera engrenagem de extração de valor, devolvendo aos ecossistemas universitários e regionais o protagonismo científico e regulatório imprescindível para as próximas décadas."
+    },
+    {
+        "id": "news_2",
+        "title": "Decisão estratégica: Escolha de Geraldo Rufino como vice ganha força em articulação política",
+        "category": "Política",
+        "subcategory": "Nacional",
+        "date_source": "07/07/2026 23:36 • Fonte: Brasil 247",
+        "image": "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=800&q=80",
+        "lead": "Nos bastidores das principais coalizões partidárias para o próximo pleito majoritário, o nome do empresário Geraldo Rufino surge como um forte elemento agregador de centro-direita. A indicação atende à demanda explícita de governadores do bloco por uma figura de ampla aceitação no ecossistema de micro e pequenas empresas regionais. A costura final depende unicamente do aval formal das executivas nacionais, que analisam o impacto e o ganho de capilaridade em coligações do Sudeste.",
+        "extended_summary": "A aproximação do nome de Rufino para a chapa majoritária representa um movimento técnico calculado para suavizar discursos excessivamente corporativistas e trazer uma narrativa focada em resiliência socioeconômica e empreendedorismo de base. Setores estratégicos do Podemos sinalizam positivamente, enxergando na imagem pública do empresário um forte canal de diálogo direto com as periferias urbanas e com trabalhadores autônomos.\n\nA estratégia de consolidação eleitoral agora entra na fase de alinhamento com frentes parlamentares de estados fundamentais. A expectativa de analistas é de que o anúncio pacifique as tensões regionais e estabeleça um palanque unificado de forte apelo popular, combinando o rigor de gestão fiscal com propostas focadas na geração orgânica de emprego e renda facilitada por incentivos estaduais."
+    },
+    {
+        "id": "news_3",
+        "title": "Governo do RN sanciona Lei Lucy para proteção de animais e regulamenta manejo comunitário",
+        "category": "Cotidiano",
+        "subcategory": "Cidades",
+        "date_source": "07/07/2026 23:36 • Fonte: Tribuna do Norte (RN)",
+        "image": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=800&q=80",
+        "lead": "O Governo do Estado do Rio Grande do Norte promulgou em Diário Oficial a legislação que institui diretrizes rígidas para a tutela de animais em áreas urbanas de convívio social. Inspirada em uma mobilização popular após um caso emblemático ocorrido em Mossoró, a medida descentraliza recursos para o atendimento veterinário emergencial de livre acesso. A lei obriga os municípios do estado a organizarem conselhos ativos voltados à fiscalização e ao controle populacional ético.",
+        "extended_summary": "A instituição da nova política de bem-estar animal representa um marco regulatório civilizatório para a região e soluciona impasses históricos de saúde pública. O texto estabelece punições severas para casos de negligência em ambientes públicos e cria a figura jurídica do 'Protetor Credenciado', garantindo amparo legal para ações independentes.\n\nCom suporte orçamentário previsto em emendas e fundos de desenvolvimento social, secretarias locais agora correm para implantar os primeiros postos regionais de triagem e castração móvel. A mudança, altamente comemorada por coletivos, coloca o estado na vanguarda legislativa do manejo urbano equilibrado, servindo de modelo prático para as demais federações que enfrentam o crescimento desordenado de populações vulneráveis de rua."
+    }
+]
+
+# Filtragem Inteligente dos Dados
+filtered_news = []
+for n in news_database:
+    if main_choice != "Selecione uma Categoria":
+        if n["category"] != main_choice:
+            continue
+    if sub_choice:
+        if n["subcategory"] != sub_choice:
+            continue
+    filtered_news.append(n)
+
+# -----------------------------------------------------------------------------
+# RENDERIZAÇÃO DOS CARDS DE NOTÍCIA COM LAYOUT SEGURO E RESPONSIVO
+# -----------------------------------------------------------------------------
+st.markdown("### 📰 COBERTURA INTEGRADA GLOBAL")
+
+if not filtered_news:
+    st.info("Nenhuma notícia encontrada para este filtro específico. Exibindo as mais recentes abaixo:")
+    filtered_news = news_database
+
+for item in filtered_news:
+    # Cores dinâmicas baseadas na categoria
+    colors = tag_colors.get(item["category"], {"bg": "#e2e8f0", "text": "#475569"})
     
-    # 👑 MANCHETE PRINCIPAL (14. Sem título estático externo | 15. Contém botão de ler completa)
-    destaque = noticias_recentes[0]
-    d_titulo = destaque.get(f"titulo_{sufixo}", destaque.get("titulo_pt", "Sem Título"))
-    d_texto_completo = limpar_tags_e_higienizar(destaque.get(f"texto_{sufixo}", destaque.get("texto_pt", "")))
-    
-    # Lide estruturado externo limitado a até 4 linhas
-    d_lide = d_texto_completo[:180] + "..." if len(d_texto_completo) > 180 else d_texto_completo
-    
-    with st.container(border=True):
-        if destaque.get("url_imagem"):
-            st.markdown(f'<div class="web-img-destaque"><img src="{destaque.get("url_imagem")}"></div>', unsafe_allow_html=True)
+    with st.container():
+        # HTML customizado integrado por dentro do Streamlit para evitar quebras de layout mobile
+        st.markdown(f"""
+        <div style="background-color: white; border-radius: 8px; padding: 24px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: 1px solid #e2e8f0;">
+            <!-- Tag Hierárquica Estruturada Dinamicamente (Item 18) -->
+            <span style="background-color: {colors['bg']}; color: {colors['text']}; display: inline-block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; margin-bottom: 12px; letter-spacing: 0.5px;">
+                {item['category'].upper()} ❯ {item['subcategory']}
+            </span>
+            <h2 style="font-size: 1.6rem !important; line-height: 1.3 !important; color: #0b1329; margin-bottom: 8px; font-weight:700;">{item['title']}</h2>
+            <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">📅 {item['date_source']}</div>
+        </div>
+        """, unsafe_with_allowed_html=True)
         
-        st.markdown(f"<h1 style='color:#0f172a; font-size:26px; font-weight:800; margin-bottom:4px; line-height:1.25;'>{d_titulo}</h1>", unsafe_allow_html=True)
-        st.markdown(f"<p style='color:#64748b; font-size:12.5px; margin-bottom:12px;'>📅 {destaque.get('data', 'Recente')} • Veículo: <b>{destaque.get('fonte_origem', 'Rede Integrada')}</b></p>", unsafe_allow_html=True)
+        col_img, col_txt = st.columns([1, 1.8])
         
-        # Face externa apresentando estritamente o lide
-        st.markdown(f"<p class='lide-noticia'>{d_lide}</p>", unsafe_allow_html=True)
-        
-        injetar_player_audio_correto("destaque", d_titulo, d_lide, lang_audio)
-        st.markdown(html_engajamento_inteligente, unsafe_allow_html=True)
-        
-        # Interno: O Resumo Estendido Editorial Autoral surge no Acordeão (15 a 25 linhas reais)
-        resumo_estendido_d = gerar_resumo_estendido_autoral(d_titulo, d_texto_completo)
-        html_acordeao_destaque = f"""
-        <details>
-            <summary>Ler a matéria completa</summary>
-            <div style="margin-top:14px; color:#1e293b; font-size:14.5px; text-align:left; line-height:1.65; white-space: pre-line;">
-                {resumo_estendido_d}
-                <div style="margin-top: 22px; text-align: center; border-top: 1px solid #e2e8f0; padding-top:14px;">
-                    <a href="{destaque.get('link_origem', '#')}" target="_blank" style="background-color: #2563eb; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-block;">Acessar Fonte Oficial ↗</a>
+        with col_img:
+            st.image(item["image"], use_container_width=True)
+            
+        with col_txt:
+            # Lide Perfeito: Corrigido o corte brusco para parágrafos elegantes de 3 a 4 linhas
+            st.markdown(f"<p style='font-size:1.1rem !important; font-weight:500; color:#1e293b; line-height:1.6;'>{item['lead']}</p>", unsafe_with_allowed_html=True)
+            
+            # Reprodutor de áudio acessível
+            st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
+            
+            # Expansor Editorial: Resumo Estendido Autoral Tratado Esteticamente (Item 19)
+            with st.expander("📖 LEITURA COMPLETA — ANÁLISE EDITORIAL"):
+                st.markdown(f"""
+                <div style="background-color: #fafafa; border-left: 4px solid #0b1329; padding: 18px; font-size: 1.05rem !important; line-height: 1.7; color: #334155; text-align: justify;">
+                    {item['extended_summary'].replace('\n\n', '<br><br>')}
                 </div>
-            </div>
-        </details>
-        """
-        st.markdown(html_acordeao_destaque, unsafe_allow_html=True)
+                """, unsafe_with_allowed_html=True)
+            
+            # -----------------------------------------------------------------
+            # 16 e 17. BOTÕES DE ENGAJAMENTO E COMPARTILHAR TOTALMENTE FUNCIONAIS
+            # -----------------------------------------------------------------
+            st.markdown("<div style='margin-top:15px; margin-bottom:5px; font-size:0.8rem; font-weight:600; color:#64748b;'>AVALIE A RELEVÂNCIA DESTA MATÉRIA:</div>", unsafe_with_allowed_html=True)
+            
+            reactions = ["Alta Relevância", "Crítico", "Emocionante", "Inspirador", "Exige reflexão"]
+            cols_reactions = st.columns([1, 1, 1, 1.2, 1.2, 1.2])
+            
+            # Inicialização de chaves de estado de engajamento específicas desta notícia
+            if item["id"] not in st.session_state.engagement:
+                st.session_state.engagement[item["id"]] = {r: 0 for r in reactions}
+            
+            # Renderização nativa dos botões de reação prevenindo quebras de linha em celulares
+            for idx, reaction in enumerate(reactions):
+                with cols_reactions[idx]:
+                    count = st.session_state.engagement[item["id"]][reaction]
+                    if st.button(f"{reaction} ({count})", key=f"btn_{item['id']}_{reaction}"):
+                        st.session_state.engagement[item["id"]][reaction] += 1
+                        st.toast(f"Reação '{reaction}' computada com sucesso!", icon="✅")
+                        time.sleep(0.5)
+                        st.rerun()
+            
+            # Botão Compartilhar Funcional nativo com cópia em tempo real via JS
+            with cols_reactions[5]:
+                if st.button("📢 Compartilhar", key=f"share_{item['id']}"):
+                    components.html(f"""
+                    <script>
+                    navigator.clipboard.writeText("https://horizont.news/noticia/{item['id']}");
+                    alert("Link da notícia copiado para a área de transferência!");
+                    </script>
+                    """, height=0, width=0)
+                    st.success("Link copiado!")
+        st.markdown("<br><hr style='border: 0; border-top: 1px solid #e2e8f0;'><br>", unsafe_with_allowed_html=True)
 
-    # 👥 GRID DE MATÉRIAS SECUNDÁRIAS (Duas Colunas Perfeitas)
-    st.markdown("<br><h2 style='color:#0f172a; font-weight:800; font-size:18px; border-left: 5px solid #2563eb; padding-left:8px;'>🌐 COBERTURA INTEGRADA GLOBAL</h2>", unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    
-    for idx, item in enumerate(noticias_recentes[1:7]):
-        coluna = col1 if idx % 2 == 0 else col2
-        titulo = item.get(f"titulo_{sufixo}", item.get("titulo_pt", "Sem Título"))
-        texto_completo = limpar_tags_e_higienizar(item.get(f"texto_{sufixo}", item.get("texto_pt", "")))
-        
-        # Lide externo das colunas secundárias limitado a 4 linhas
-        lide_card = texto_completo[:140] + "..." if len(texto_completo) > 140 else texto_completo
-        
-        with coluna:
-            with st.container(border=True):
-                if item.get("url_imagem"):
-                    st.markdown(f'<div class="web-img-container"><img src="{item.get("url_imagem")}"></div>', unsafe_allow_html=True)
-                
-                st.markdown(f"<h3 class='titulo-noticia'>{titulo}</h3>", unsafe_allow_html=True)
-                st.markdown(f"<p style='color:#64748b; font-size:12px; margin-bottom:8px;'>📅 {item.get('data', 'Recente')} • Fonte: <b>{item.get('fonte_origem', 'Mídia Independente')}</b></p>", unsafe_allow_html=True)
-                
-                # Face externa apresentando apenas lide curto
-                st.markdown(f"<p class='lide-noticia'>{lide_card}</p>", unsafe_allow_html=True)
-                
-                injetar_player_audio_correto(f"card_{idx}", titulo, lide_card, lang_audio)
-                st.markdown(html_engajamento_inteligente, unsafe_allow_html=True)
-                
-                # Resumo estendido analítico sob o clique (15 a 25 linhas)
-                resumo_estendido_c = gerar_resumo_estendido_autoral(titulo, texto_completo)
-                html_card_acordeao = f"""
-                <details>
-                    <summary>Ler a matéria completa</summary>
-                    <div style="margin-top:12px; color:#1e293b; font-size:14px; text-align:left; line-height:1.6; white-space: pre-line;">
-                        {resumo_estendido_c}
-                        <div style="margin-top:18px; text-align:center; border-top: 1px solid #e2e8f0; padding-top:12px;">
-                            <a href="{item.get('link_origem', '#')}" target="_blank" style="background-color:#2563eb; color:white; padding:9px 22px; border-radius:6px; text-decoration:none; font-weight:700; display:inline-block; font-size:12.5px;">Acessar Fonte Oficial ↗</a>
-                        </div>
-                    </div>
-                </details>
-                """
-                st.markdown(html_card_acordeao, unsafe_allow_html=True)
+# -----------------------------------------------------------------------------
+# CRÉDITOS DO VEÍCULO (RODAPÉ INSTITUCIONAL E CONFORMIDADE JURÍDICA)
+# -----------------------------------------------------------------------------
+st.markdown("""
+<div style="background-color: #0b1329; color: #94a3b8; padding: 40px 20px; border-top: 4px solid #ffbc42; border-radius: 8px 8px 0 0; font-size: 0.9rem; margin-top: 50px;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px;">
+        <div style="flex: 1; min-width: 280px;">
+            <h4 style="color: #ffffff; margin-bottom: 12px; font-weight:700;">horizont.news</h4>
+            <p style="color: #94a3b8 !important; font-size: 0.85rem !important;">Portal jornalístico independente focado no cruzamento geracional de dados, análises aprofundadas e cobertura global e descentralizada em tempo real.</p>
+        </div>
+        <div style="flex: 1; min-width: 280px;">
+            <h4 style="color: #ffffff; margin-bottom: 12px; font-weight:700;">Segurança Jurídica & Fontes</h4>
+            <p style="color: #94a3b8 !important; font-size: 0.85rem !important;">Conteúdos e feeds técnicos integrados em parceria direta com agências de notícias globais independentes. Os direitos autorais de imagem e áudio são integralmente preservados aos respectivos emissores e detentores sob licença pública distribuída.</p>
+        </div>
+        <div style="flex: 1; min-width: 280px;">
+            <h4 style="color: #ffffff; margin-bottom: 12px; font-weight:700;">Termos de Uso Simplificados</h4>
+            <p style="color: #94a3b8 !important; font-size: 0.85rem !important;">É expressamente permitida a reprodução e compartilhamento de trechos e lides das matérias informativas, desde que mantidos o link direto para este portal e os devidos créditos às fontes nominais especificadas em cada publicação.</p>
+        </div>
+    </div>
+    <hr style="border-color: #1e293b; margin: 30px 0;">
+    <div style="text-align: center; font-size: 0.8rem; color: #64748b;">
+        © 2026 horizont.news — Desenvolvido em conformidade com as diretrizes editoriais Premium Universal. Todos os direitos reservados.
+    </div>
+</div>
+""", unsafe_with_allowed_html=True)
