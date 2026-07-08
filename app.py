@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Injeção de CSS Premium com Correção Absoluta de Quebras Mobile
+# Injeção de CSS Premium - Correção Cirúrgica Anti-Empilhamento Mobile
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -66,53 +66,61 @@ st.markdown("""
         margin-top: 5px !important;
     }
 
-    /* Correção Estrita das Colunas de Reação para Forçar Linha Horizontal Sempre */
-    div[data-testid="stHorizontalBlockHasColumns"] {
+    /* ---------------------------------------------------------------------
+       O SEGREDO DA CORREÇÃO: Forçar fluxo inline contínuo no mobile
+    --------------------------------------------------------------------- */
+    /* Anula o comportamento de quebra de linha forçado pelo Streamlit */
+    .dynamic-pill-flow div[data-testid="stHorizontalBlockHasColumns"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: wrap !important;
-        gap: 8px !important;
+        gap: 6px !important;
         width: 100% !important;
     }
     
-    div[data-testid="column"] {
+    .dynamic-pill-flow div[data-testid="column"] {
         flex: unset !important;
         width: auto !important;
         min-width: unset !important;
     }
 
-    /* Estilização Geral dos Botões de Reação Nativos */
-    div[data-testid="column"] button {
+    /* Força os botões internos do Streamlit a agirem como mini-tags inline */
+    .dynamic-pill-flow div[data-testid="stButton"] button {
+        width: auto !important;
+        display: inline-flex !important;
+        white-space: nowrap !important;
+        padding: 6px 12px !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
         background-color: #f1f5f9 !important;
         border: 1px solid #e2e8f0 !important;
         color: #334155 !important;
-        padding: 6px 14px !important;
         border-radius: 20px !important;
-        font-size: 0.85rem !important;
-        font-weight: 500 !important;
         transition: all 0.2s ease-in-out !important;
-        width: auto !important;
-        display: inline-flex !important;
     }
     
-    div[data-testid="column"] button:hover {
+    .dynamic-pill-flow div[data-testid="stButton"] button:hover {
         background-color: #e2e8f0 !important;
         color: #0b1329 !important;
         border-color: #cbd5e1 !important;
     }
 
-    /* Destaque para o Botão de Compartilhar Individualizado pela Key */
-    div[data-testid="column"] button[key^="sh_"] {
+    /* Customização específica do botão de compartilhar para se destacar */
+    .share-wrapper div[data-testid="stButton"] button {
         background-color: #0b1329 !important;
         color: #ffffff !important;
         border: none !important;
     }
+    .share-wrapper div[data-testid="stButton"] button:hover {
+        background-color: #1e293b !important;
+        color: #00f5d4 !important;
+    }
 
-    /* Otimização Responsiva do Player de Áudio Nativo */
+    /* Responsividade do Player de Áudio Nativo */
     audio {
         max-width: 100% !important;
         width: 100% !important;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
 
     .stDetails { border: 1px solid #e2e8f0 !important; background-color: #ffffff !important; border-radius: 6px !important; }
@@ -121,7 +129,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# MAPEAMENTO DE INTERAÇÕES E BANCO DE DADOS
+# ESTADO DE SESSÃO E BANCO DE DATA INTEGRADO
 # -----------------------------------------------------------------------------
 if "engagement" not in st.session_state:
     st.session_state.engagement = {
@@ -143,7 +151,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Banners Institucionais e Carrosséis Fluidos
+# Letreiros e Notícias Rápidas
 html_ticker_institutional = """
 <div style="background-color: #00f5d4; color: #0b1329; padding: 10px 0; overflow: hidden; white-space: nowrap; font-weight: 700; font-size: 0.95rem; border-bottom: 2px solid #0b1329;">
     <div style="display: inline-block; padding-left: 100%; animation: marquee-inst 28s linear infinite;">
@@ -169,7 +177,7 @@ html_ticker_news = """
 components.html(html_ticker_news, height=45)
 
 # -----------------------------------------------------------------------------
-# 11. SESSÃO COPA DO MUNDO 2026
+# SESSÃO ESPECIAL: COPA DO MUNDO 2026
 # -----------------------------------------------------------------------------
 st.markdown("### 🏆 COPA DO MUNDO FIFA 2026 — BASTIDORES & CURIOSIDADES")
 with st.container():
@@ -189,7 +197,7 @@ with st.container():
 st.markdown("---")
 
 # -----------------------------------------------------------------------------
-# 18. ÁRVORE DE CATEGORIZAÇÃO E FILTRAGEM DINÂMICA
+# FILTRAGEM DINÂMICA DE CATEGORIAS
 # -----------------------------------------------------------------------------
 categories_tree = {
     "Selecione uma Categoria": [],
@@ -219,9 +227,7 @@ tag_colors = {
     "Tech & Ciência": {"bg": "#e0f2fe", "text": "#1d4ed8"}
 }
 
-# -----------------------------------------------------------------------------
-# BASE DE DADOS INTEGRADA
-# -----------------------------------------------------------------------------
+# Base de Dados Corrente
 news_database = [
     {
         "id": "news_1",
@@ -230,8 +236,8 @@ news_database = [
         "subcategory": "Inovação",
         "date_source": "07/07/2026 23:37 • Veículo: Outras Palavras",
         "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
-        "lead": "A corrida pelo controle dos ecossistemas digitais avançados ganha contornos dramáticos à medida que blocos governamentais passam a exigir infraestruturas proprietárias de dados. A dependência de soluções terceirizadas de software de poucas corporações ocidentais acendeu o alerta máximo sobre a autonomia e a segurança cibernética de países em desenvolvimento. O redesenho deste mercado global redefine não apenas relações financeiras bilaterais, mas o próprio conceito de soberania tecnológica internacional moderna.",
-        "extended_summary": "O atual cenário das ferramentas computacionais e redes neurais de larga escala reflete um espelhamento das assimetrias econômicas tradicionais. Ao acumularem volumes imensos de capital por meio de licenças fechadas de software, um grupo restrito de grandes corporações cria barreiras intransponíveis de entrada, forçando governos inteiros a transferirem ativos intelectuais valiosos para servidores centralizados externos.<br><br>Especialistas apontam que a saída sustentável e madura para esta dependência sistêmica envolve o fomento rigoroso a modelos de código aberto e servidores locais geridos de forma pública."
+        "lead": "A corrida pelo controle dos ecossistemas digitais avançados ganha contornos dramáticos à medida que blocos governamentais passam a exigir infraestruturas proprietárias de dados. A dependência de soluções terceirizadas de software de poucas corporações ocidentais acendeu o alerta máximo sobre a autonomia e a segurança cibernética de países em desenvolvimento.",
+        "extended_summary": "O atual cenário das ferramentas computacionais e redes neurais de larga escala reflete um espelhamento das assimetrias econômicas tradicionais. Ao acumularem volumes imensos de capital por meio de licenças fechadas de software, um grupo restrito de grandes corporações cria barreiras intransponíveis de entrada."
     },
     {
         "id": "news_2",
@@ -240,18 +246,8 @@ news_database = [
         "subcategory": "Nacional",
         "date_source": "07/07/2026 23:36 • Fonte: Brasil 247",
         "image": "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=800&q=80",
-        "lead": "Nos bastidores das principais coalizões partidárias para o próximo pleito majoritário, o nome do empresário Geraldo Rufino surge como um forte elemento agregador de centro-direita. A indicação atende à demanda explícita de governadores do bloco por uma figura de ampla aceitação no ecossistema de micro e pequenas empresas regionais. A costura final depende unicamente do aval formal das executivas nacionais, que analisam o impacto e o ganho de capilaridade em coligações do Sudeste.",
-        "extended_summary": "A aproximação do nome de Rufino para a chapa majoritária representa um movimento técnico calculado para suavizar discursos excessivamente corporativistas e trazer uma narrativa focada em resiliência socioeconômica e empreendedorismo de base. Setores estratégicos do Podemos sinalizam positivamente, enxergando na imagem pública do empresário um forte canal de diálogo direto."
-    },
-    {
-        "id": "news_3",
-        "title": "Governo do RN sanciona Lei Lucy para proteção de animais e regulamenta manejo comunitário",
-        "category": "Cotidiano",
-        "subcategory": "Cidades",
-        "date_source": "07/07/2026 23:36 • Fonte: Tribuna do Norte (RN)",
-        "image": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=800&q=80",
-        "lead": "O Governo do Estado do Rio Grande do Norte promulgou em Diário Oficial a legislação que institui diretrizes rígidas para a tutela de animais em áreas urbanas de convívio social. Inspirada em uma mobilização popular após um caso emblemático ocorrido em Mossoró, a medida descentraliza recursos para o atendimento veterinário emergencial de livre acesso. A lei obriga os municípios do estado a organizarem conselhos ativos voltados à fiscalização e ao controle populacional ético.",
-        "extended_summary": "A instituição da nova política de bem-estar animal representa um marco regulatório civilizatório para a região e soluciona impasses históricos de saúde pública. O texto establishes punições severas para casos de negligência em ambientes públicos e cria a figura jurídica do 'Protetor Credenciado', garantindo amparo legal para ações independentes."
+        "lead": "Nos bastidores das principais coalizões partidárias para o próximo pleito majoritário, o nome do empresário Geraldo Rufino surge como um forte elemento agregador de centro-direita. A indicação atende à demanda explícita de governadores do bloco por uma figura de ampla aceitação no ecossistema de micro e pequenas empresas regionais.",
+        "extended_summary": "A aproximação do nome de Rufino para a chapa majoritária representa um movimento técnico calculado para suavizar discursos excessivamente corporativistas e trazer uma narrativa focada em resiliência socioeconômica e empreendedorismo de base."
     }
 ]
 
@@ -293,49 +289,46 @@ for item in filtered_news:
             </div>
             """, unsafe_allow_html=True)
         
-        # -----------------------------------------------------------------
-        # BOTÕES NATIVOS DISPOSTOS LADO A LADO VIA CSS INLINE-FLEX REATIVO
-        # -----------------------------------------------------------------
         st.markdown("<div style='margin-top:14px; margin-bottom:4px; font-size:0.8rem; font-weight:600; color:#64748b; text-transform:uppercase;'>Avaliação de Relevância Editorial:</div>", unsafe_allow_html=True)
         
         reactions_list = ["Alta Relevância", "Crítico", "Emocionante", "Inspirador", "Exige reflexão"]
         
-        # Geramos n+1 colunas para acomodar botões nativos que serão interceptados pelo CSS global flexível
-        react_cols = st.columns(len(reactions_list) + 1)
+        # -----------------------------------------------------------------
+        # BLOCO DE CONTEXTO SEGURO CONTRA EMPILHAMENTO NO MOBILE
+        # -----------------------------------------------------------------
+        st.markdown('<div class="dynamic-pill-flow">', unsafe_allow_html=True)
         
+        react_cols = st.columns(len(reactions_list) + 1)
         for idx, r_name in enumerate(reactions_list):
             with react_cols[idx]:
                 current_count = st.session_state.engagement[item["id"]][r_name]
-                if st.button(f"{r_name} ({current_count})", key=f"btn_{item['id']}_{idx}"):
+                if st.button(f"{r_name} ({current_count})", key=f"p_btn_{item['id']}_{idx}"):
                     st.session_state.engagement[item["id"]][r_name] += 1
                     st.toast(f"Reação registada: {r_name}", icon="✅")
                     time.sleep(0.1)
                     st.rerun()
                     
         with react_cols[len(reactions_list)]:
+            st.markdown('<div class="share-wrapper">', unsafe_allow_html=True)
             if st.button("📢 Compartilhar", key=f"sh_{item['id']}"):
                 components.html(f"""
                 <script>
                 navigator.clipboard.writeText("https://horizont.news/noticia/{item['id']}");
-                alert("Link corporativo copiado para a área de transferência!");
+                alert("Link copiado para a área de transferência!");
                 </script>
                 """, height=0, width=0)
                 st.success("Copiado!")
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("<br><hr style='border: 0; border-top: 1px solid #e2e8f0; margin: 10px 0;'><br>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# CRÉDITOS DO VEÍCULO (RODAPÉ)
+# RODAPÉ PREMIUM
 # -----------------------------------------------------------------------------
 st.markdown("""
 <div style="background-color: #0b1329; color: #94a3b8; padding: 40px 20px; border-top: 4px solid #ffbc42; border-radius: 8px 8px 0 0; font-size: 0.9rem; margin-top: 40px;">
-    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px;">
-        <div style="flex: 1; min-width: 280px;">
-            <h4 style="color: #ffffff; margin-bottom: 12px; font-weight:700;">horizont.news</h4>
-            <p style="color: #94a3b8 !important; font-size: 0.85rem !important;">Portal jornalístico independente focado no cruzamento geracional de dados e cobertura global.</p>
-        </div>
-    </div>
-    <hr style="border-color: #1e293b; margin: 30px 0;">
     <div style="text-align: center; font-size: 0.8rem; color: #64748b;">
         © 2026 horizont.news — Desenvolvido em conformidade com as diretrizes editoriais Premium Universal.
     </div>
