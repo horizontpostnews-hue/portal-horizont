@@ -12,10 +12,9 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Injeção de CSS para o Tema Premium Universal e Controle de Responsividade Estrita
+# Injeção de CSS Premium com Correção Absoluta de Quebras Mobile
 st.markdown("""
 <style>
-    /* Reset e Estilos Globais */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
     html, body, [data-testid="stAppViewContainer"] {
@@ -24,7 +23,6 @@ st.markdown("""
         color: #1e293b !important;
     }
     
-    /* Acessibilidade e Contraste Sênior */
     h1, h2, h3 {
         color: #0b1329 !important;
         font-weight: 700 !important;
@@ -35,7 +33,6 @@ st.markdown("""
         color: #1e293b !important;
     }
     
-    /* Barra de Identidade Visual Premium */
     .premium-header {
         background: linear-gradient(135deg, #0b1329 0%, #1e293b 100%);
         padding: 30px 20px;
@@ -52,21 +49,15 @@ st.markdown("""
         gap: 15px;
         margin-bottom: 10px;
     }
-    .premium-logo-globe {
-        color: #00f5d4;
-        font-size: 2.8rem;
-    }
+    .premium-logo-globe { color: #00f5d4; font-size: 2.8rem; }
     .premium-title {
         color: #ffffff !important;
         font-size: 3rem !important;
         font-weight: 800 !important;
         letter-spacing: -1.5px;
         margin: 0 !important;
-        padding: 0 !important;
     }
-    .premium-title span {
-        color: #00f5d4;
-    }
+    .premium-title span { color: #00f5d4; }
     .premium-tagline {
         color: #ffbc42 !important;
         font-size: 1.1rem !important;
@@ -75,63 +66,74 @@ st.markdown("""
         margin-top: 5px !important;
     }
 
-    /* Customização Absoluta dos Botões de Reação (Estilo Feed de Redes Sociais) */
-    .reaction-box div[data-testid="stHorizontalBlock"] {
+    /* Container de Reações Flexível Seguro contra Quebras (Anti-st.columns) */
+    .flex-reaction-container {
         display: flex !important;
         flex-wrap: wrap !important;
-        gap: 8px !important;
-        flex-direction: row !important;
+        gap: 6px !important;
         width: 100% !important;
+        margin-top: 10px;
+        margin-bottom: 15px;
     }
-    .reaction-box div[data-testid="column"] {
-        width: auto !important;
-        flex: none !important;
-        min-width: unset !important;
-    }
-    .reaction-box button {
-        width: auto !important;
-        white-space: nowrap !important;
-        padding: 6px 12px !important;
-        font-size: 0.85rem !important;
+    
+    .reaction-pill {
+        display: inline-flex !important;
+        align-items: center !important;
         background-color: #f1f5f9 !important;
         border: 1px solid #e2e8f0 !important;
+        padding: 6px 14px !important;
+        border-radius: 20px !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
         color: #334155 !important;
-        border-radius: 20px !important; /* Estilo pílula moderna */
-        transition: all 0.2s ease;
+        text-decoration: none !important;
+        transition: all 0.2s ease-in-out !important;
+        cursor: pointer !important;
     }
-    .reaction-box button:hover {
+    
+    .reaction-pill:hover {
         background-color: #e2e8f0 !important;
-        border-color: #cbd5e1 !important;
         color: #0b1329 !important;
+        border-color: #cbd5e1 !important;
     }
-
-    /* Estilização específica para o botão de compartilhar */
-    .share-btn button {
+    
+    .share-pill {
         background-color: #0b1329 !important;
         color: #ffffff !important;
         border: none !important;
     }
-    .share-btn button:hover {
+    .share-pill:hover {
         background-color: #1e293b !important;
         color: #00f5d4 !important;
     }
 
-    .stDetails {
-        border: 1px solid #e2e8f0 !important;
-        background-color: #ffffff !important;
-        border-radius: 6px !important;
-    }
-
-    .block-container {
-        padding-top: 2rem !important;
-        padding-bottom: 2rem !important;
-    }
+    .stDetails { border: 1px solid #e2e8f0 !important; background-color: #ffffff !important; border-radius: 6px !important; }
+    .block-container { padding-top: 2rem !important; padding-bottom: 2rem !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# Inicialização do Estado de Sessão
+# -----------------------------------------------------------------------------
+# MAPEAMENTO E CAPTURA DE INTERAÇÕES EM TEMPO REAL VIA QUERY PARAMS
+# -----------------------------------------------------------------------------
 if "engagement" not in st.session_state:
-    st.session_state.engagement = {}
+    st.session_state.engagement = {
+        "news_1": {"Alta Relevância": 14, "Crítico": 3, "Emocionante": 0, "Inspirador": 8, "Exige reflexão": 5},
+        "news_2": {"Alta Relevância": 22, "Crítico": 11, "Emocionante": 2, "Inspirador": 19, "Exige reflexão": 7},
+        "news_3": {"Alta Relevância": 45, "Crítico": 1, "Emocionante": 38, "Inspirador": 29, "Exige reflexão": 12}
+    }
+
+# Captura de cliques via parâmetros de URL limpos
+q_params = st.query_params
+if "click_news" in q_params and "click_react" in q_params:
+    target_news = q_params["click_news"]
+    target_react = q_params["click_react"]
+    if target_news in st.session_state.engagement and target_react in st.session_state.engagement[target_news]:
+        st.session_state.engagement[target_news][target_react] += 1
+        st.toast(f"Reação '{target_react}' adicionada com sucesso!", icon="✅")
+        # Reseta os parâmetros de query de forma limpa para evitar loops de refresh
+        st.query_params.clear()
+        time.sleep(0.3)
+        st.rerun()
 
 # -----------------------------------------------------------------------------
 # 1. BARRA DE IDENTIDADE VISUAL OFICIAL E ASSINATURA CLÁSSICA
@@ -146,42 +148,29 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# -----------------------------------------------------------------------------
-# 2. BANNER INSTITUCIONAL DINÂMICO
-# -----------------------------------------------------------------------------
+# Banners Institucionais e Carrosséis Fluidos
 html_ticker_institutional = """
 <div style="background-color: #00f5d4; color: #0b1329; padding: 10px 0; overflow: hidden; white-space: nowrap; font-weight: 700; font-size: 0.95rem; border-bottom: 2px solid #0b1329;">
     <div style="display: inline-block; padding-left: 100%; animation: marquee-inst 28s linear infinite;">
         ⚡ CONEXÃO DIRETA COM AS PRINCIPAIS AGÊNCIAS DE NOTÍCIAS INDEPENDENTES DO MUNDO • COBERTURA INTERNACIONAL INTEGRADA DA ÁSIA, EUROPA, AMÉRICAS E ORIENTE MÉDIO • CONECTANDO GERAÇÕES COM PLURALIDADE E INDEPENDÊNCIA ⚡
     </div>
 </div>
-<style>
-@keyframes marquee-inst { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
-</style>
+<style> @keyframes marquee-inst { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } } </style>
 """
 components.html(html_ticker_institutional, height=42)
 
-# -----------------------------------------------------------------------------
-# 3. CARROSSEL DINÂMICO DE ÚLTIMAS NOTÍCIAS
-# -----------------------------------------------------------------------------
 html_ticker_news = """
 <div style="display: flex; background-color: #0b1329; border-radius: 4px; overflow: hidden; margin-top: 15px; margin-bottom: 20px; align-items: center;">
-    <div style="background-color: #ffbc42; color: #0b1329; padding: 10px 15px; font-weight: 800; font-size: 0.85rem; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px;">
-        ÚLTIMAS NOTÍCIAS
-    </div>
+    <div style="background-color: #ffbc42; color: #0b1329; padding: 10px 15px; font-weight: 800; font-size: 0.85rem; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px;">ÚLTIMAS NOTÍCIAS</div>
     <div style="overflow: hidden; white-space: nowrap; width: 100%; display: flex; align-items: center;">
         <div style="display: inline-block; padding-left: 100%; color: #ffffff; font-size: 0.95rem; font-weight: 500; animation: marquee-news 35s linear infinite;">
             Analistas apontam redirecionamento estratégico em acordos multilaterais e fortalecimento de blocos emergentes (Fonte: Agência Global) &nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
             Congresso Nacional pauta nova votação sobre diretrizes econômicas e de fomento à inovação tecnológica (Fonte: Folha de Brasília) &nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
-            Mercado financeiro eleva projeção de crescimento industrial puxado por alta histórica em exportações de manufaturados (Fonte: Valor Econômico) &nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
-            Novas metas climáticas globais exigem reformulação urgente em matrizes de transporte urbano nas metrópoles (Fonte: ClimaInfo) &nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
-            Principais polos acadêmicos assinam cooperação internacional para desenvolvimento ético e descentralizado de IA (Fonte: TechReview)
+            Mercado financeiro eleva projeção de crescimento industrial puxado por alta histórica em exportações de manufaturados (Fonte: Valor Econômico)
         </div>
     </div>
 </div>
-<style>
-@keyframes marquee-news { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
-</style>
+<style> @keyframes marquee-news { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } } </style>
 """
 components.html(html_ticker_news, height=45)
 
@@ -199,7 +188,7 @@ with st.container():
             "<h4 style='margin-top:0; color:#0b1329;'>Giro Técnico Diário: Infraestrutura e Sedes</h4>"
             "<p style='font-size: 0.95rem !important; margin-bottom:0;'>Confira os detalhes cruciais das arenas que receberão as próximas fases eliminatórias da Copa do Mundo de 2026. "
             "A preparação de cidades-sede como Seattle, Nova York e Cidade do México redefine os parâmetros logísticos globais do futebol moderno. "
-            "A movimentação nos bastidores aponta recordes de ocupação hoteleira nas imediações dos complexos esportivos, consolidando a América do Norte como o coração pulsante da torcida mundial nesta edição histórica.</p>"
+            "A movimentação nos bastidores aponta recordes de ocupação hoteleira nas imediações dos complexos esportivos, consolidando a América do Norte como o coração pulsante da torcida mundial.</p>"
             "</div>", 
             unsafe_allow_html=True
         )
@@ -216,9 +205,7 @@ categories_tree = {
     "Cotidiano": ["Cidades", "Polícia", "Educação", "Clima"],
     "Esportes": ["Futebol", "Basquete", "Variedades"],
     "Entretenimento": ["Cinema & Séries", "Música", "Pop/Tendências"],
-    "Tech & Ciência": ["Gadgets", "Espaço", "Inovação"],
-    "Gastronomia e Culinária": ["Tendências", "Alta Cozinha", "Receitas"],
-    "Viver Bem": ["Saúde", "Bem-Estar", "Medicina", "Longevidade"]
+    "Tech & Ciência": ["Gadgets", "Espaço", "Inovação"]
 }
 
 col_f1, col_f2 = st.columns(2)
@@ -236,9 +223,7 @@ tag_colors = {
     "Cotidiano": {"bg": "#fef3c7", "text": "#b45309"},
     "Esportes": {"bg": "#f3e8ff", "text": "#6b21a8"},
     "Entretenimento": {"bg": "#fce7f3", "text": "#be185d"},
-    "Tech & Ciência": {"bg": "#e0f2fe", "text": "#1d4ed8"},
-    "Gastronomia e Culinária": {"bg": "#ffedd5", "text": "#c2410c"},
-    "Viver Bem": {"bg": "#ccfbf1", "text": "#0f766e"}
+    "Tech & Ciência": {"bg": "#e0f2fe", "text": "#1d4ed8"}
 }
 
 # -----------------------------------------------------------------------------
@@ -253,7 +238,7 @@ news_database = [
         "date_source": "07/07/2026 23:37 • Veículo: Outras Palavras",
         "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
         "lead": "A corrida pelo controle dos ecossistemas digitais avançados ganha contornos dramáticos à medida que blocos governamentais passam a exigir infraestruturas proprietárias de dados. A dependência de soluções terceirizadas de software de poucas corporações ocidentais acendeu o alerta máximo sobre a autonomia e a segurança cibernética de países em desenvolvimento. O redesenho deste mercado global redefine não apenas relações financeiras bilaterais, mas o próprio conceito de soberania tecnológica internacional moderna.",
-        "extended_summary": "O atual cenário das ferramentas computacionais e redes neurais de larga escala reflete um espelhamento das assimetrias econômicas tradicionais. Ao acumularem volumes imensos de capital por meio de licenças fechadas de software, um grupo restrito de grandes corporações cria barreiras intransponíveis de entrada, forçando governos inteiros a transferirem ativos intelectuais valiosos para servidores centralizados externos.<br><br>Especialistas apontam que a saída sustentável e madura para esta dependência sistêmica envolve o fomento rigoroso a modelos de código aberto e servidores locais geridos de forma pública. Essa mudança drástica de postura é o que impede que o desenvolvimento de algoritmos de automação e análise se converta em uma mera engrenagem de extração de valor, devolvendo aos ecossistemas universitários e regionais o protagonismo científico e regulatório imprescindível para as próximas décadas."
+        "extended_summary": "O atual cenário das ferramentas computacionais e redes neurais de larga escala reflete um espelhamento das assimetrias econômicas tradicionais. Ao acumularem volumes imensos de capital por meio de licenças fechadas de software, um grupo restrito de grandes corporações cria barreiras intransponíveis de entrada, forçando governos inteiros a transferirem ativos intelectuais valiosos para servidores centralizados externos.<br><br>Especialistas apontam que a saída sustentável e madura para esta dependência sistêmica envolve o fomento rigoroso a modelos de código aberto e servidores locais geridos de forma pública."
     },
     {
         "id": "news_2",
@@ -263,7 +248,7 @@ news_database = [
         "date_source": "07/07/2026 23:36 • Fonte: Brasil 247",
         "image": "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=800&q=80",
         "lead": "Nos bastidores das principais coalizões partidárias para o próximo pleito majoritário, o nome do empresário Geraldo Rufino surge como um forte elemento agregador de centro-direita. A indicação atende à demanda explícita de governadores do bloco por uma figura de ampla aceitação no ecossistema de micro e pequenas empresas regionais. A costura final depende unicamente do aval formal das executivas nacionais, que analisam o impacto e o ganho de capilaridade em coligações do Sudeste.",
-        "extended_summary": "A aproximação do nome de Rufino para a chapa majoritária representa um movimento técnico calculado para suavizar discursos excessivamente corporativistas e trazer uma narrativa focada em resiliência socioeconômica e empreendedorismo de base. Setores estratégicos do Podemos sinalizam positivamente, enxergando na imagem pública do empresário um forte canal de diálogo direto com as periferias urbanas e com trabalhadores autônomos.<br><br>A estratégia de consolidação eleitoral agora entra na fase de alinhamento com frentes parlamentares de estados fundamentais. A expectativa de analistas é de que o anúncio pacifique as tensões regionais e estabeleça um palanque unificado de forte apelo popular, combinando o rigor de gestão fiscal com propostas focadas na geração orgânica de emprego e renda facilitada por incentivos estaduais."
+        "extended_summary": "A aproximação do nome de Rufino para a chapa majoritária representa um movimento técnico calculado para suavizar discursos excessivamente corporativistas e trazer uma narrativa focada em resiliência socioeconômica e empreendedorismo de base. Setores estratégicos do Podemos sinalizam positivamente, enxergando na imagem pública do empresário um forte canal de diálogo direto."
     },
     {
         "id": "news_3",
@@ -273,7 +258,7 @@ news_database = [
         "date_source": "07/07/2026 23:36 • Fonte: Tribuna do Norte (RN)",
         "image": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=800&q=80",
         "lead": "O Governo do Estado do Rio Grande do Norte promulgou em Diário Oficial a legislação que institui diretrizes rígidas para a tutela de animais em áreas urbanas de convívio social. Inspirada em uma mobilização popular após um caso emblemático ocorrido em Mossoró, a medida descentraliza recursos para o atendimento veterinário emergencial de livre acesso. A lei obriga os municípios do estado a organizarem conselhos ativos voltados à fiscalização e ao controle populacional ético.",
-        "extended_summary": "A instituição da nova política de bem-estar animal representa um marco regulatório civilizatório para a região e soluciona impasses históricos de saúde pública. O texto estabelece punições severas para casos de negligência em ambientes públicos e cria a figura jurídica do 'Protetor Credenciado', garantindo amparo legal para ações independentes.<br><br>Com suporte orçamentário previsto em emendas e fundos de desenvolvimento social, secretarias locais agora correm para implantar os primeiros postos regionais de triagem e castração móvel. A mudança, altamente comemorada por coletivos, coloca o estado na vanguarda legislativa do manejo urbano equilibrado, servindo de modelo prático para as demais federações que enfrentam o crescimento desordenado de populações vulneráveis de rua."
+        "extended_summary": "A instituição da nova política de bem-estar animal representa um marco regulatório civilizatório para a região e soluciona impasses históricos de saúde pública. O texto estabelece punições severas para casos de negligência em ambientes públicos e cria a figura jurídica do 'Protetor Credenciado', garantindo amparo legal para ações independentes."
     }
 ]
 
@@ -282,7 +267,7 @@ if not filtered_news:
     filtered_news = news_database
 
 # -----------------------------------------------------------------------------
-# RENDERIZAÇÃO DO CORPO DE MATÉRIAS
+# RENDERIZAÇÃO RESPONSIVA DAS MATÉRIAS
 # -----------------------------------------------------------------------------
 st.markdown("### 📰 COBERTURA INTEGRADA GLOBAL")
 
@@ -310,47 +295,29 @@ for item in filtered_news:
         with st.expander("📖 LER A MATÉRIA COMPLETA — ANÁLISE EDITORIAL"):
             st.markdown(f"""
             <div style="background-color: #fafafa; border-left: 4px solid #0b1329; padding: 15px; font-size: 1.05rem !important; line-height: 1.6; color: #1e293b; text-align: justify;">
-                <p style="margin-top:0; font-weight:700; color:#0b1329; font-size:1.05rem !important;">Análise de Conjuntura — Conselho Editorial Horizont</p>
-                <p style="color:#1e293b !important; font-size:1.05rem !important; margin-bottom:0;">{item['extended_summary']}</p>
+                <p style="margin-top:0; font-weight:700; color:#0b1329;">Análise de Conjuntura — Conselho Editorial Horizont</p>
+                <p style="color:#1e293b !important; margin-bottom:0;">{item['extended_summary']}</p>
             </div>
             """, unsafe_allow_html=True)
         
         # -----------------------------------------------------------------
-        # ÁREA DE REAÇÕES PROTEGIDA CONTRA EMPILHAMENTO NO MOBILE
+        # COMPONENTE DE REAÇÕES RESPONSIVO PURÍSSIMO (FLEXBOX REAL - ZERO ST.COLUMNS)
         # -----------------------------------------------------------------
-        st.markdown("<div style='margin-top:14px; margin-bottom:8px; font-size:0.8rem; font-weight:600; color:#64748b; text-transform:uppercase;'>Avaliação de Relevância Editorial:</div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top:14px; margin-bottom:4px; font-size:0.8rem; font-weight:600; color:#64748b; text-transform:uppercase;'>Avaliação de Relevância Editorial:</div>", unsafe_allow_html=True)
         
-        reactions = ["Alta Relevância", "Crítico", "Emocionante", "Inspirador", "Exige reflexão"]
-        if item["id"] not in st.session_state.engagement:
-            st.session_state.engagement[item["id"]] = {r: 0 for r in reactions}
-            
-        # Encapsulamento em div customizada para forçar comportamento inline contínuo
-        st.markdown('<div class="reaction-box">', unsafe_allow_html=True)
+        # Montagem dinâmica do HTML Inline Flexbox usando âncoras de redirecionamento seguras
+        reactions_list = ["Alta Relevância", "Crítico", "Emocionante", "Inspirador", "Exige reflexão"]
         
-        # Geramos colunas falsas de tamanho 1 para que fiquem juntas no flexbox interceptado pelo CSS superior
-        sub_cols = st.columns(len(reactions) + 1)
-        for idx, reaction in enumerate(reactions):
-            with sub_cols[idx]:
-                current_count = st.session_state.engagement[item["id"]][reaction]
-                if st.button(f"{reaction} ({current_count})", key=f"react_{item['id']}_{idx}"):
-                    st.session_state.engagement[item["id"]][reaction] += 1
-                    st.toast(f"Reação registrada: {reaction}", icon="✅")
-                    time.sleep(0.3)
-                    st.rerun()
-                    
-        with sub_cols[len(reactions)]:
-            st.markdown('<div class="share-btn">', unsafe_allow_html=True)
-            if st.button("📢 Compartilhar", key=f"sh_{item['id']}"):
-                components.html(f"""
-                <script>
-                navigator.clipboard.writeText("https://horizont.news/noticia/{item['id']}");
-                alert("Link corporativo copiado para a área de transferência!");
-                </script>
-                """, height=0, width=0)
-                st.success("Copiado!")
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-        st.markdown('</div>', unsafe_allow_html=True)
+        pills_html = '<div class="flex-reaction-container">'
+        for r_name in reactions_list:
+            count = st.session_state.engagement[item["id"]][r_name]
+            pills_html += f'<a class="reaction-pill" href="/?click_news={item["id"]}&click_react={r_name}" target="_self"> {r_name} ({count})</a>'
+        
+        # Injeção do botão de partilha estilizado perfeitamente no mesmo fluxo
+        pills_html += f'<a class="reaction-pill share-pill" onclick="navigator.clipboard.writeText(\'https://horizont.news/noticia/{item["id"]}\'); alert(\'Link copiado!\');">📢 Compartilhar</a>'
+        pills_html += '</div>'
+        
+        st.markdown(pills_html, unsafe_allow_html=True)
 
     st.markdown("<br><hr style='border: 0; border-top: 1px solid #e2e8f0; margin: 10px 0;'><br>", unsafe_allow_html=True)
 
@@ -362,20 +329,16 @@ st.markdown("""
     <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px;">
         <div style="flex: 1; min-width: 280px;">
             <h4 style="color: #ffffff; margin-bottom: 12px; font-weight:700;">horizont.news</h4>
-            <p style="color: #94a3b8 !important; font-size: 0.85rem !important;">Portal jornalístico independente focado no cruzamento geracional de dados, análises aprofundadas e cobertura global e descentralizada em tempo real.</p>
+            <p style="color: #94a3b8 !important; font-size: 0.85rem !important;">Portal jornalístico independente focado no cruzamento geracional de dados e cobertura global.</p>
         </div>
         <div style="flex: 1; min-width: 280px;">
             <h4 style="color: #ffffff; margin-bottom: 12px; font-weight:700;">Segurança Jurídica & Fontes</h4>
-            <p style="color: #94a3b8 !important; font-size: 0.85rem !important;">Conteúdos e feeds técnicos integrados em parceria direta com agências de notícias globais independentes. Os direitos autorais de imagem e áudio são integralmente preservados aos respectivos emissores e detentores sob licença pública distribuída.</p>
-        </div>
-        <div style="flex: 1; min-width: 280px;">
-            <h4 style="color: #ffffff; margin-bottom: 12px; font-weight:700;">Termos de Uso Simplificados</h4>
-            <p style="color: #94a3b8 !important; font-size: 0.85rem !important;">É expressamente permitida a reprodução e compartilhamento de trechos e lides das matérias informativas, desde que mantidos o link direto para este portal e os devidos créditos às fontes nominais especificadas em cada publicação.</p>
+            <p style="color: #94a3b8 !important; font-size: 0.85rem !important;">Conteúdos e feeds técnicos integrados em parceria direta com agências de notícias globais independentes.</p>
         </div>
     </div>
     <hr style="border-color: #1e293b; margin: 30px 0;">
     <div style="text-align: center; font-size: 0.8rem; color: #64748b;">
-        © 2026 horizont.news — Desenvolvido em conformidade com as diretrizes editoriais Premium Universal. Todos os direitos reservados.
+        © 2026 horizont.news — Desenvolvido em conformidade com as diretrizes editoriais Premium Universal.
     </div>
 </div>
 """, unsafe_allow_html=True)
