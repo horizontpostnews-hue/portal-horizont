@@ -66,45 +66,53 @@ st.markdown("""
         margin-top: 5px !important;
     }
 
-    /* Container de Reações Flexível Seguro contra Quebras (Anti-st.columns) */
-    .flex-reaction-container {
+    /* Correção Estrita das Colunas de Reação para Forçar Linha Horizontal Sempre */
+    div[data-testid="stHorizontalBlockHasColumns"] {
         display: flex !important;
+        flex-direction: row !important;
         flex-wrap: wrap !important;
-        gap: 6px !important;
+        gap: 8px !important;
         width: 100% !important;
-        margin-top: 10px;
-        margin-bottom: 15px;
     }
     
-    .reaction-pill {
-        display: inline-flex !important;
-        align-items: center !important;
+    div[data-testid="column"] {
+        flex: unset !important;
+        width: auto !important;
+        min-width: unset !important;
+    }
+
+    /* Estilização Geral dos Botões de Reação Nativos */
+    div[data-testid="column"] button {
         background-color: #f1f5f9 !important;
         border: 1px solid #e2e8f0 !important;
+        color: #334155 !important;
         padding: 6px 14px !important;
         border-radius: 20px !important;
         font-size: 0.85rem !important;
         font-weight: 500 !important;
-        color: #334155 !important;
-        text-decoration: none !important;
         transition: all 0.2s ease-in-out !important;
-        cursor: pointer !important;
+        width: auto !important;
+        display: inline-flex !important;
     }
     
-    .reaction-pill:hover {
+    div[data-testid="column"] button:hover {
         background-color: #e2e8f0 !important;
         color: #0b1329 !important;
         border-color: #cbd5e1 !important;
     }
-    
-    .share-pill {
+
+    /* Destaque para o Botão de Compartilhar Individualizado pela Key */
+    div[data-testid="column"] button[key^="sh_"] {
         background-color: #0b1329 !important;
         color: #ffffff !important;
         border: none !important;
     }
-    .share-pill:hover {
-        background-color: #1e293b !important;
-        color: #00f5d4 !important;
+
+    /* Otimização Responsiva do Player de Áudio Nativo */
+    audio {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin-bottom: 10px;
     }
 
     .stDetails { border: 1px solid #e2e8f0 !important; background-color: #ffffff !important; border-radius: 6px !important; }
@@ -113,7 +121,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# MAPEAMENTO E CAPTURA DE INTERAÇÕES EM TEMPO REAL VIA QUERY PARAMS
+# MAPEAMENTO DE INTERAÇÕES E BANCO DE DADOS
 # -----------------------------------------------------------------------------
 if "engagement" not in st.session_state:
     st.session_state.engagement = {
@@ -121,19 +129,6 @@ if "engagement" not in st.session_state:
         "news_2": {"Alta Relevância": 22, "Crítico": 11, "Emocionante": 2, "Inspirador": 19, "Exige reflexão": 7},
         "news_3": {"Alta Relevância": 45, "Crítico": 1, "Emocionante": 38, "Inspirador": 29, "Exige reflexão": 12}
     }
-
-# Captura de cliques via parâmetros de URL limpos
-q_params = st.query_params
-if "click_news" in q_params and "click_react" in q_params:
-    target_news = q_params["click_news"]
-    target_react = q_params["click_react"]
-    if target_news in st.session_state.engagement and target_react in st.session_state.engagement[target_news]:
-        st.session_state.engagement[target_news][target_react] += 1
-        st.toast(f"Reação '{target_react}' adicionada com sucesso!", icon="✅")
-        # Reseta os parâmetros de query de forma limpa para evitar loops de refresh
-        st.query_params.clear()
-        time.sleep(0.3)
-        st.rerun()
 
 # -----------------------------------------------------------------------------
 # 1. BARRA DE IDENTIDADE VISUAL OFICIAL E ASSINATURA CLÁSSICA
@@ -165,8 +160,7 @@ html_ticker_news = """
     <div style="overflow: hidden; white-space: nowrap; width: 100%; display: flex; align-items: center;">
         <div style="display: inline-block; padding-left: 100%; color: #ffffff; font-size: 0.95rem; font-weight: 500; animation: marquee-news 35s linear infinite;">
             Analistas apontam redirecionamento estratégico em acordos multilaterais e fortalecimento de blocos emergentes (Fonte: Agência Global) &nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
-            Congresso Nacional pauta nova votação sobre diretrizes econômicas e de fomento à inovação tecnológica (Fonte: Folha de Brasília) &nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
-            Mercado financeiro eleva projeção de crescimento industrial puxado por alta histórica em exportações de manufaturados (Fonte: Valor Econômico)
+            Congresso Nacional pauta nova votação sobre diretrizes econômicas e de fomento à inovação tecnológica (Fonte: Folha de Brasília)
         </div>
     </div>
 </div>
@@ -187,8 +181,7 @@ with st.container():
             "<div style='background-color: #f1f5f9; padding: 20px; border-left: 4px solid #ffbc42; border-radius: 4px; height: 100%;'>"
             "<h4 style='margin-top:0; color:#0b1329;'>Giro Técnico Diário: Infraestrutura e Sedes</h4>"
             "<p style='font-size: 0.95rem !important; margin-bottom:0;'>Confira os detalhes cruciais das arenas que receberão as próximas fases eliminatórias da Copa do Mundo de 2026. "
-            "A preparação de cidades-sede como Seattle, Nova York e Cidade do México redefine os parâmetros logísticos globais do futebol moderno. "
-            "A movimentação nos bastidores aponta recordes de ocupação hoteleira nas imediações dos complexos esportivos, consolidando a América do Norte como o coração pulsante da torcida mundial.</p>"
+            "A preparação de cidades-sede como Seattle, Nova York e Cidade do México redefine os parâmetros logísticos globais do futebol moderno.</p>"
             "</div>", 
             unsafe_allow_html=True
         )
@@ -258,7 +251,7 @@ news_database = [
         "date_source": "07/07/2026 23:36 • Fonte: Tribuna do Norte (RN)",
         "image": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=800&q=80",
         "lead": "O Governo do Estado do Rio Grande do Norte promulgou em Diário Oficial a legislação que institui diretrizes rígidas para a tutela de animais em áreas urbanas de convívio social. Inspirada em uma mobilização popular após um caso emblemático ocorrido em Mossoró, a medida descentraliza recursos para o atendimento veterinário emergencial de livre acesso. A lei obriga os municípios do estado a organizarem conselhos ativos voltados à fiscalização e ao controle populacional ético.",
-        "extended_summary": "A instituição da nova política de bem-estar animal representa um marco regulatório civilizatório para a região e soluciona impasses históricos de saúde pública. O texto estabelece punições severas para casos de negligência em ambientes públicos e cria a figura jurídica do 'Protetor Credenciado', garantindo amparo legal para ações independentes."
+        "extended_summary": "A instituição da nova política de bem-estar animal representa um marco regulatório civilizatório para a região e soluciona impasses históricos de saúde pública. O texto establishes punições severas para casos de negligência em ambientes públicos e cria a figura jurídica do 'Protetor Credenciado', garantindo amparo legal para ações independentes."
     }
 ]
 
@@ -301,23 +294,33 @@ for item in filtered_news:
             """, unsafe_allow_html=True)
         
         # -----------------------------------------------------------------
-        # COMPONENTE DE REAÇÕES RESPONSIVO PURÍSSIMO (FLEXBOX REAL - ZERO ST.COLUMNS)
+        # BOTÕES NATIVOS DISPOSTOS LADO A LADO VIA CSS INLINE-FLEX REATIVO
         # -----------------------------------------------------------------
         st.markdown("<div style='margin-top:14px; margin-bottom:4px; font-size:0.8rem; font-weight:600; color:#64748b; text-transform:uppercase;'>Avaliação de Relevância Editorial:</div>", unsafe_allow_html=True)
         
-        # Montagem dinâmica do HTML Inline Flexbox usando âncoras de redirecionamento seguras
         reactions_list = ["Alta Relevância", "Crítico", "Emocionante", "Inspirador", "Exige reflexão"]
         
-        pills_html = '<div class="flex-reaction-container">'
-        for r_name in reactions_list:
-            count = st.session_state.engagement[item["id"]][r_name]
-            pills_html += f'<a class="reaction-pill" href="/?click_news={item["id"]}&click_react={r_name}" target="_self"> {r_name} ({count})</a>'
+        # Geramos n+1 colunas para acomodar botões nativos que serão interceptados pelo CSS global flexível
+        react_cols = st.columns(len(reactions_list) + 1)
         
-        # Injeção do botão de partilha estilizado perfeitamente no mesmo fluxo
-        pills_html += f'<a class="reaction-pill share-pill" onclick="navigator.clipboard.writeText(\'https://horizont.news/noticia/{item["id"]}\'); alert(\'Link copiado!\');">📢 Compartilhar</a>'
-        pills_html += '</div>'
-        
-        st.markdown(pills_html, unsafe_allow_html=True)
+        for idx, r_name in enumerate(reactions_list):
+            with react_cols[idx]:
+                current_count = st.session_state.engagement[item["id"]][r_name]
+                if st.button(f"{r_name} ({current_count})", key=f"btn_{item['id']}_{idx}"):
+                    st.session_state.engagement[item["id"]][r_name] += 1
+                    st.toast(f"Reação registada: {r_name}", icon="✅")
+                    time.sleep(0.1)
+                    st.rerun()
+                    
+        with react_cols[len(reactions_list)]:
+            if st.button("📢 Compartilhar", key=f"sh_{item['id']}"):
+                components.html(f"""
+                <script>
+                navigator.clipboard.writeText("https://horizont.news/noticia/{item['id']}");
+                alert("Link corporativo copiado para a área de transferência!");
+                </script>
+                """, height=0, width=0)
+                st.success("Copiado!")
 
     st.markdown("<br><hr style='border: 0; border-top: 1px solid #e2e8f0; margin: 10px 0;'><br>", unsafe_allow_html=True)
 
@@ -330,10 +333,6 @@ st.markdown("""
         <div style="flex: 1; min-width: 280px;">
             <h4 style="color: #ffffff; margin-bottom: 12px; font-weight:700;">horizont.news</h4>
             <p style="color: #94a3b8 !important; font-size: 0.85rem !important;">Portal jornalístico independente focado no cruzamento geracional de dados e cobertura global.</p>
-        </div>
-        <div style="flex: 1; min-width: 280px;">
-            <h4 style="color: #ffffff; margin-bottom: 12px; font-weight:700;">Segurança Jurídica & Fontes</h4>
-            <p style="color: #94a3b8 !important; font-size: 0.85rem !important;">Conteúdos e feeds técnicos integrados em parceria direta com agências de notícias globais independentes.</p>
         </div>
     </div>
     <hr style="border-color: #1e293b; margin: 30px 0;">
