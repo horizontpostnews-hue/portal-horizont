@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 # Injeção de CSS para o Tema Premium Universal (#0b1329, #00f5d4, #ffbc42)
-# Correção do argumento de renderização HTML e calibração de contrastes
+# Correção absoluta de responsividade mobile e quebra de botões
 st.markdown("""
 <style>
     /* Reset e Estilos Globais */
@@ -33,7 +33,7 @@ st.markdown("""
     p {
         font-size: 1.05rem !important;
         line-height: 1.6 !important;
-        color: #1e293b !important; /* Contraste aumentado para o público sênior */
+        color: #1e293b !important;
     }
     
     /* Barra de Identidade Visual Premium */
@@ -77,7 +77,22 @@ st.markdown("""
         margin-top: 5px !important;
     }
 
-    /* Espaçamentos Gerais do Streamlit */
+    /* Ajuste de Botões para não quebrarem em Mobile */
+    div.stButton > button {
+        width: 100% !important;
+        white-space: nowrap !important;
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.85rem !important;
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0b1329 !important;
+        border-radius: 4px !important;
+    }
+    div.stButton > button:hover {
+        border-color: #00f5d4 !important;
+        color: #00f5d4 !important;
+    }
+
     .block-container {
         padding-top: 2rem !important;
         padding-bottom: 2rem !important;
@@ -88,7 +103,7 @@ st.markdown("""
         50% { transform: scale(1.05); opacity: 1; }
     }
 </style>
-""", unsafe_allow_html=True) # CORRIGIDO: Argumento oficial aceito pelo Streamlit
+""", unsafe_allow_html=True)
 
 # Inicialização do Estado de Sessão para Reações de Engajamento
 if "engagement" not in st.session_state:
@@ -166,9 +181,9 @@ with st.container():
             "<h4 style='margin-top:0; color:#0b1329;'>Giro Técnico Diário: Infraestrutura e Sedes</h4>"
             "<p style='font-size: 0.95rem !important;'>Confira os detalhes cruciais das arenas que receberão as próximas fases eliminatórias da Copa do Mundo de 2026. "
             "A preparação de cidades-sede como Seattle, Nova York e Cidade do México redefine os parâmetros logísticos globais do futebol moderno. "
-            "A movimentação nos bastidores aponta recordes de ocupação hoteleira nas imediações dos complexos esportivos, consolidando a América do Norte como o coração pulsante da torcida mundial nesta edição histórica.</p>"
+            "A movimentação nos bastidores aponta recordes de ocupação hoteleira nas imediações dos complexos esportivos, consolidando a América do Norte como o coração pulmante da torcida mundial nesta edição histórica.</p>"
             "</div>", 
-            unsafe_with_allowed_html=True
+            unsafe_allow_html=True
         )
 
 st.markdown("---")
@@ -222,7 +237,7 @@ news_database = [
         "date_source": "07/07/2026 23:37 • Veículo: Outras Palavras",
         "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
         "lead": "A corrida pelo controle dos ecossistemas digitais avançados ganha contornos dramáticos à medida que blocos governamentais passam a exigir infraestruturas proprietárias de dados. A dependência de soluções terceirizadas de software de poucas corporações ocidentais acendeu o alerta máximo sobre a autonomia e a segurança cibernética de países em desenvolvimento. O redesenho deste mercado global redefine não apenas relações financeiras bilaterais, mas o próprio conceito de soberania tecnológica internacional moderna.",
-        "extended_summary": "O atual cenário das ferramentas computacionais e redes neurais de larga escala reflete um espelhamento das assimetrias econômicas tradicionais. Ao acumularem volumes imensos de capital por meio de licenças fechadas de software, um grupo restrito de grandes corporações cria barreiras intransponíveis de entrada, forçando governos inteiros a transferirem ativos intelectuais valiosos para servidores centralizados externos.\n\nEspecialistas apontam que a saída sustentável e madura para esta dependência sistêmica envolve o fomento rigoroso a modelos de código aberto e servidores locais geridos de forma pública. Essa mudança drástica de postura é o que impede que o desenvolvimento de algoritmos de automação e análise se converta em uma mera engrenagem de extração de valor, devolvendo aos ecossistemas universitários e regionais o protagonismo científico e regulatório imprescindível para as próximas décadas."
+        "extended_summary": "O atual cenário das ferramentas computacionais e redes neurais de larga escala reflete um espelhamento das assimetrias econômicas tradicionais. Ao acumularem volumes imensos de capital por meio de licenças fechadas de software, um grupo restrito de grandes corporações cria barreiras intransponíveis de entrada, forçando governos inteiros a transferirem ativos intelectuais valiosos para servidores centralizados externos.<br><br>Especialistas apontam que a saída sustentável e madura para esta dependência sistêmica envolve o fomento rigoroso a modelos de código aberto e servidores locais geridos de forma pública. Essa mudança drástica de postura é o que impede que o desenvolvimento de algoritmos de automação e análise se converta em uma mera engrenagem de extração de valor, devolvendo aos ecossistemas universitários e regionais o protagonismo científico e regulatório imprescindível para as próximas décadas."
     },
     {
         "id": "news_2",
@@ -232,7 +247,7 @@ news_database = [
         "date_source": "07/07/2026 23:36 • Fonte: Brasil 247",
         "image": "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=800&q=80",
         "lead": "Nos bastidores das principais coalizões partidárias para o próximo pleito majoritário, o nome do empresário Geraldo Rufino surge como um forte elemento agregador de centro-direita. A indicação atende à demanda explícita de governadores do bloco por uma figura de ampla aceitação no ecossistema de micro e pequenas empresas regionais. A costura final depende unicamente do aval formal das executivas nacionais, que analisam o impacto e o ganho de capilaridade em coligações do Sudeste.",
-        "extended_summary": "A aproximação do nome de Rufino para a chapa majoritária representa um movimento técnico calculado para suavizar discursos excessivamente corporativistas e trazer uma narrativa focada em resiliência socioeconômica e empreendedorismo de base. Setores estratégicos do Podemos sinalizam positivamente, enxergando na imagem pública do empresário um forte canal de diálogo direto com as periferias urbanas e com trabalhadores autônomos.\n\nA estratégia de consolidação eleitoral agora entra na fase de alinhamento com frentes parlamentares de estados fundamentais. A expectativa de analistas é de que o anúncio pacifique as tensões regionais e estabeleça um palanque unificado de forte apelo popular, combinando o rigor de gestão fiscal com propostas focadas na geração orgânica de emprego e renda facilitada por incentivos estaduais."
+        "extended_summary": "A aproximação do nome de Rufino para a chapa majoritária representa um movimento técnico calculado para suavizar discursos excessivamente corporativistas e trazer uma narrativa focada em resiliência socioeconômica e empreendedorismo de base. Setores estratégicos do Podemos sinalizam positivamente, enxergando na imagem pública do empresário um forte canal de diálogo direto com as periferias urbanas e com trabalhadores autônomos.<br><br>A estratégia de consolidação eleitoral agora entra na fase de alinhamento com frentes parlamentares de estados fundamentais. A expectativa de analistas é de que o anúncio pacifique as tensões regionais e estabeleça um palanque unificado de forte apelo popular, combinando o rigor de gestão fiscal com propostas focadas na geração orgânica de emprego e renda facilitada por incentivos estaduais."
     },
     {
         "id": "news_3",
@@ -242,7 +257,7 @@ news_database = [
         "date_source": "07/07/2026 23:36 • Fonte: Tribuna do Norte (RN)",
         "image": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=800&q=80",
         "lead": "O Governo do Estado do Rio Grande do Norte promulgou em Diário Oficial a legislação que institui diretrizes rígidas para a tutela de animais em áreas urbanas de convívio social. Inspirada em uma mobilização popular após um caso emblemático ocorrido em Mossoró, a medida descentraliza recursos para o atendimento veterinário emergencial de livre acesso. A lei obriga os municípios do estado a organizarem conselhos ativos voltados à fiscalização e ao controle populacional ético.",
-        "extended_summary": "A instituição da nova política de bem-estar animal representa um marco regulatório civilizatório para a região e soluciona impasses históricos de saúde pública. O texto estabelece punições severas para casos de negligência em ambientes públicos e cria a figura jurídica do 'Protetor Credenciado', garantindo amparo legal para ações independentes.\n\nCom suporte orçamentário previsto em emendas e fundos de desenvolvimento social, secretarias locais agora correm para implantar os primeiros postos regionais de triagem e castração móvel. A mudança, altamente comemorada por coletivos, coloca o estado na vanguarda legislativa do manejo urbano equilibrado, servindo de modelo prático para as demais federações que enfrentam o crescimento desordenado de populações vulneráveis de rua."
+        "extended_summary": "A instituição da nova política de bem-estar animal representa um marco regulatório civilizatório para a região e soluciona impasses históricos de saúde pública. O texto estabelece punições severas para casos de negligência em ambientes públicos e cria a figura jurídica do 'Protetor Credenciado', garantindo amparo legal para ações independentes.<br><br>Com suporte orçamentário previsto em emendas e fundos de desenvolvimento social, secretarias locais agora correm para implantar os primeiros postos regionais de triagem e castração móvel. A mudança, altamente comemorada por coletivos, coloca o estado na vanguarda legislativa do manejo urbano equilibrado, servindo de modelo prático para as demais federações que enfrentam o crescimento desordenado de populações vulneráveis de rua."
     }
 ]
 
@@ -267,7 +282,7 @@ if not filtered_news:
 st.markdown("### 📰 COBERTURA INTEGRADA GLOBAL")
 
 for item in filtered_news:
-    colors = tag_colors.get(item["category"], {"bg": "#e2e8f0", "text": "#475569"})
+    colors = tag_colors.get(item["category"], {"bg": "#e0f2fe", "text": "#0369a1"})
     
     with st.container():
         st.markdown(f"""
@@ -286,29 +301,30 @@ for item in filtered_news:
             st.image(item["image"], use_container_width=True)
             
         with col_txt:
-            # Lide fluido, completo e sem interrupções abruptas (Ajuste de 3 a 4 linhas)
+            # Lide fluido de 3 a 4 linhas sem interrupções bruscas
             st.markdown(f"<p style='font-size:1.1rem !important; font-weight:500; color:#1e293b; line-height:1.6; margin-bottom: 15px;'>{item['lead']}</p>", unsafe_with_allowed_html=True)
             
             # Player de áudio da matéria
             st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
             
-            # 19. Resumo Estendido Autoral com tratamento estético e textual refinado
+            # 19. CORRIGIDO: Remoção absoluta de markdown exposto e tags cruas na visualização
             with st.expander("📖 LER A MATÉRIA COMPLETA — ANÁLISE EDITORIAL"):
                 st.markdown(f"""
-                <div style="background-color: #fafafa; border-left: 4px solid #0b1329; padding: 20px; font-size: 1.05rem !important; line-height: 1.7; color: #1e293b; text-align: justify; white-space: pre-line;">
-                    <strong>Análise de Conjuntura — Conselho Editorial Horizont</strong>
-                    
-                    {item['extended_summary']}
+                <div style="background-color: #faf8f5; border-left: 4px solid #0b1329; padding: 20px; font-size: 1.05rem !important; line-height: 1.7; color: #1e293b; text-align: justify;">
+                    <p style="margin-top:0; font-weight:700; color:#0b1329;">Análise de Conjuntura — Conselho Editorial Horizont</p>
+                    <p style="color:#1e293b !important; font-size:1.05rem !important;">{item['extended_summary']}</p>
                 </div>
                 """, unsafe_allow_html=True)
             
             # -----------------------------------------------------------------
-            # 16 e 17. BOTÕES DE ENGAJAMENTO E COMPARTILHAR TOTALMENTE FUNCIONAIS
+            # 16 e 17. BOTÕES DE ENGAJAMENTO CORRIGIDOS (MÁXIMA RESPONSIVIDADE)
             # -----------------------------------------------------------------
             st.markdown("<div style='margin-top:15px; margin-bottom:5px; font-size:0.8rem; font-weight:600; color:#64748b;'>AVALIE A RELEVÂNCIA DESTA MATÉRIA:</div>", unsafe_allow_html=True)
             
             reactions = ["Alta Relevância", "Crítico", "Emocionante", "Inspirador", "Exige reflexão"]
-            cols_reactions = st.columns([1, 1, 1, 1.2, 1.2, 1.2])
+            
+            # Grid que se adapta tanto a Desktop (lado a lado) como Mobile (linhas independentes se necessário)
+            cols_reactions = st.columns([1, 1, 1, 1.1, 1.1, 1.1])
             
             if item["id"] not in st.session_state.engagement:
                 st.session_state.engagement[item["id"]] = {r: 0 for r in reactions}
@@ -316,22 +332,22 @@ for item in filtered_news:
             for idx, reaction in enumerate(reactions):
                 with cols_reactions[idx]:
                     count = st.session_state.engagement[item["id"]][reaction]
-                    if st.button(f"{reaction} ({count})", key=f"btn_{item['id']}_{reaction}"):
+                    if st.button(f"{reaction} ({count})", key=f"b_{item['id']}_{reaction}"):
                         st.session_state.engagement[item["id"]][reaction] += 1
-                        st.toast(f"Reação '{reaction}' registrada!", icon="✅")
+                        st.toast(f"Reação '{reaction}' computada!", icon="✅")
                         time.sleep(0.4)
                         st.rerun()
             
-            # Botão Compartilhar com Chamada JavaScript Real
+            # Botão Compartilhar Puro e sem quebras
             with cols_reactions[5]:
-                if st.button("📢 Compartilhar", key=f"share_{item['id']}"):
+                if st.button("📢 Compartilhar", key=f"s_{item['id']}"):
                     components.html(f"""
                     <script>
                     navigator.clipboard.writeText("https://horizont.news/noticia/{item['id']}");
-                    alert("Link da notícia copiado para a área de transferência com sucesso!");
+                    alert("Link da notícia copiado para a área de transferência!");
                     </script>
                     """, height=0, width=0)
-                    st.success("Link copiado!")
+                    st.success("Copiado!")
                     
         st.markdown("<br><hr style='border: 0; border-top: 1px solid #e2e8f0;'><br>", unsafe_allow_html=True)
 
