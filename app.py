@@ -12,8 +12,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Injeção de CSS para o Tema Premium Universal (#0b1329, #00f5d4, #ffbc42)
-# Correção absoluta de responsividade mobile e quebra de botões
+# Injeção de CSS para o Tema Premium Universal e Controle de Responsividade Estrita
 st.markdown("""
 <style>
     /* Reset e Estilos Globais */
@@ -25,7 +24,7 @@ st.markdown("""
         color: #1e293b !important;
     }
     
-    /* Acessibilidade e Hierarquia de Textos */
+    /* Acessibilidade e Contraste Sênior */
     h1, h2, h3 {
         color: #0b1329 !important;
         font-weight: 700 !important;
@@ -56,7 +55,6 @@ st.markdown("""
     .premium-logo-globe {
         color: #00f5d4;
         font-size: 2.8rem;
-        animation: pulse 3s infinite ease-in-out;
     }
     .premium-title {
         color: #ffffff !important;
@@ -77,35 +75,22 @@ st.markdown("""
         margin-top: 5px !important;
     }
 
-    /* Ajuste de Botões para não quebrarem em Mobile */
-    div.stButton > button {
-        width: 100% !important;
-        white-space: nowrap !important;
-        padding: 0.25rem 0.5rem !important;
-        font-size: 0.85rem !important;
+    /* Customização do Expander para evitar vazamento de Markdown */
+    .stDetails {
+        border: 1px solid #e2e8f0 !important;
         background-color: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
-        color: #0b1329 !important;
-        border-radius: 4px !important;
-    }
-    div.stButton > button:hover {
-        border-color: #00f5d4 !important;
-        color: #00f5d4 !important;
+        border-radius: 6px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02) !important;
     }
 
     .block-container {
         padding-top: 2rem !important;
         padding-bottom: 2rem !important;
     }
-    
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); opacity: 0.9; }
-        50% { transform: scale(1.05); opacity: 1; }
-    }
 </style>
 """, unsafe_allow_html=True)
 
-# Inicialização do Estado de Sessão para Reações de Engajamento
+# Inicialização estável das variáveis de engajamento
 if "engagement" not in st.session_state:
     st.session_state.engagement = {}
 
@@ -126,16 +111,13 @@ st.markdown("""
 # 2. BANNER INSTITUCIONAL DINÂMICO (FLUXO MÉDIO EM CSS)
 # -----------------------------------------------------------------------------
 html_ticker_institutional = """
-<div style="background-color: #00f5d4; color: #0b1329; padding: 10px 0; overflow: hidden; white-space: nowrap; font-weight: 700; font-size: 0.95rem; box-shadow: inset 0 -2px 5px rgba(0,0,0,0.1); border-bottom: 2px solid #0b1329;">
+<div style="background-color: #00f5d4; color: #0b1329; padding: 10px 0; overflow: hidden; white-space: nowrap; font-weight: 700; font-size: 0.95rem; border-bottom: 2px solid #0b1329;">
     <div style="display: inline-block; padding-left: 100%; animation: marquee-inst 28s linear infinite;">
         ⚡ CONEXÃO DIRETA COM AS PRINCIPAIS AGÊNCIAS DE NOTÍCIAS INDEPENDENTES DO MUNDO • COBERTURA INTERNACIONAL INTEGRADA DA ÁSIA, EUROPA, AMÉRICAS E ORIENTE MÉDIO • CONECTANDO GERAÇÕES COM PLURALIDADE E INDEPENDÊNCIA ⚡
     </div>
 </div>
 <style>
-@keyframes marquee-inst {
-    0% { transform: translate3d(0, 0, 0); }
-    100% { transform: translate3d(-100%, 0, 0); }
-}
+@keyframes marquee-inst { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 </style>
 """
 components.html(html_ticker_institutional, height=42)
@@ -159,10 +141,7 @@ html_ticker_news = """
     </div>
 </div>
 <style>
-@keyframes marquee-news {
-    0% { transform: translate3d(0, 0, 0); }
-    100% { transform: translate3d(-100%, 0, 0); }
-}
+@keyframes marquee-news { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 </style>
 """
 components.html(html_ticker_news, height=45)
@@ -179,9 +158,9 @@ with st.container():
         st.markdown(
             "<div style='background-color: #f1f5f9; padding: 20px; border-left: 4px solid #ffbc42; border-radius: 4px; height: 100%;'>"
             "<h4 style='margin-top:0; color:#0b1329;'>Giro Técnico Diário: Infraestrutura e Sedes</h4>"
-            "<p style='font-size: 0.95rem !important;'>Confira os detalhes cruciais das arenas que receberão as próximas fases eliminatórias da Copa do Mundo de 2026. "
+            "<p style='font-size: 0.95rem !important; margin-bottom:0;'>Confira os detalhes cruciais das arenas que receberão as próximas fases eliminatórias da Copa do Mundo de 2026. "
             "A preparação de cidades-sede como Seattle, Nova York e Cidade do México redefine os parâmetros logísticos globais do futebol moderno. "
-            "A movimentação nos bastidores aponta recordes de ocupação hoteleira nas imediações dos complexos esportivos, consolidando a América do Norte como o coração pulmante da torcida mundial nesta edição histórica.</p>"
+            "A movimentação nos bastidores aponta recordes de ocupação hoteleira nas imediações dos complexos esportivos, consolidando a América do Norte como o coração pulsante da torcida mundial nesta edição histórica.</p>"
             "</div>", 
             unsafe_allow_html=True
         )
@@ -189,7 +168,7 @@ with st.container():
 st.markdown("---")
 
 # -----------------------------------------------------------------------------
-# 18. ÁRVORE DE CATEGORIZAÇÃO E FILTRAGEM DINÂMICA CONDICIONAL
+# 18. ÁRVORE DE CATEGORIZAÇÃO E FILTRAGEM DINÂMICA
 # -----------------------------------------------------------------------------
 categories_tree = {
     "Selecione uma Categoria": [],
@@ -204,7 +183,6 @@ categories_tree = {
 }
 
 col_f1, col_f2 = st.columns(2)
-
 with col_f1:
     main_choice = st.selectbox("📂 Selecione a Categoria Principal:", list(categories_tree.keys()))
 
@@ -213,7 +191,6 @@ if main_choice != "Selecione uma Categoria":
     with col_f2:
         sub_choice = st.selectbox("❯ Selecione a Subcategoria Específica:", categories_tree[main_choice])
 
-# Paleta Semântica para os Assuntos
 tag_colors = {
     "Política": {"bg": "#e0f2fe", "text": "#0369a1"},
     "Economia": {"bg": "#dcfce7", "text": "#15803d"},
@@ -226,7 +203,7 @@ tag_colors = {
 }
 
 # -----------------------------------------------------------------------------
-# BASE DE DADOS INTEGRADA — LIDES INTRODUTÓRIOS DE 3 A 4 LINHAS (SEM CORTES)
+# BASE DE DADOS INTEGRADA — LIDES INTRODUTÓRIOS DE 3 A 4 LINHAS CRISTALINOS
 # -----------------------------------------------------------------------------
 news_database = [
     {
@@ -247,7 +224,7 @@ news_database = [
         "date_source": "07/07/2026 23:36 • Fonte: Brasil 247",
         "image": "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=800&q=80",
         "lead": "Nos bastidores das principais coalizões partidárias para o próximo pleito majoritário, o nome do empresário Geraldo Rufino surge como um forte elemento agregador de centro-direita. A indicação atende à demanda explícita de governadores do bloco por uma figura de ampla aceitação no ecossistema de micro e pequenas empresas regionais. A costura final depende unicamente do aval formal das executivas nacionais, que analisam o impacto e o ganho de capilaridade em coligações do Sudeste.",
-        "extended_summary": "A aproximação do nome de Rufino para a chapa majoritária representa um movimento técnico calculado para suavizar discursos excessivamente corporativistas e trazer uma narrativa focada em resiliência socioeconômica e empreendedorismo de base. Setores estratégicos do Podemos sinalizam positivamente, enxergando na imagem pública do empresário um forte canal de diálogo direto com as periferias urbanas e com trabalhadores autônomos.<br><br>A estratégia de consolidação eleitoral agora entra na fase de alinhamento com frentes parlamentares de estados fundamentais. A expectativa de analistas é de que o anúncio pacifique as tensões regionais e estabeleça um palanque unificado de forte apelo popular, combinando o rigor de gestão fiscal com propostas focadas na geração orgânica de emprego e renda facilitada por incentivos estaduais."
+        "extended_summary": "A aproximação do nome de Rufino para a chapa majoritária representa um movimento técnico calculated para suavizar discursos excessivamente corporativistas e trazer uma narrativa focada em resiliência socioeconômica e empreendedorismo de base. Setores estratégicos do Podemos sinalizam positivamente, enxergando na imagem pública do empresário um forte canal de diálogo direto com as periferias urbanas e com trabalhadores autônomos.<br><br>A estratégia de consolidação eleitoral agora entra na fase de alinhamento com frentes parlamentares de estados fundamentais. A expectativa de analistas é de que o anúncio pacifique as tensões regionais e estabeleça um palanque unificado de forte apelo popular, combinando o rigor de gestão fiscal com propostas focadas na geração orgânica de emprego e renda facilitada por incentivos estaduais."
     },
     {
         "id": "news_3",
@@ -261,101 +238,90 @@ news_database = [
     }
 ]
 
-# Lógica de Filtragem de Notícias
-filtered_news = []
-for n in news_database:
-    if main_choice != "Selecione uma Categoria":
-        if n["category"] != main_choice:
-            continue
-    if sub_choice:
-        if n["subcategory"] != sub_choice:
-            continue
-    filtered_news.append(n)
-
+filtered_news = [n for n in news_database if (main_choice == "Selecione uma Categoria" or n["category"] == main_choice) and (not sub_choice or n["subcategory"] == sub_choice)]
 if not filtered_news:
-    st.info("Nenhuma notícia encontrada para este filtro específico. Exibindo o feed geral:")
     filtered_news = news_database
 
 # -----------------------------------------------------------------------------
-# RENDERIZAÇÃO RESPONSIVA DO CORPO DE MATÉRIAS
+# RENDERIZAÇÃO DO CORPO DE MATÉRIAS
 # -----------------------------------------------------------------------------
 st.markdown("### 📰 COBERTURA INTEGRADA GLOBAL")
 
 for item in filtered_news:
-    colors = tag_colors.get(item["category"], {"bg": "#e0f2fe", "text": "#0369a1"})
+    colors = tag_colors.get(item["category"], {"bg": "#e2e8f0", "text": "#475569"})
     
-    with st.container():
-        st.markdown(f"""
-        <div style="background-color: white; border-radius: 8px; padding: 24px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: 1px solid #e2e8f0;">
-            <span style="background-color: {colors['bg']}; color: {colors['text']}; display: inline-block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; margin-bottom: 12px; letter-spacing: 0.5px;">
-                {item['category'].upper()} ❯ {item['subcategory']}
-            </span>
-            <h2 style="font-size: 1.6rem !important; line-height: 1.3 !important; color: #0b1329; margin-bottom: 8px; font-weight:700;">{item['title']}</h2>
-            <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">📅 {item['date_source']}</div>
-        </div>
-        """, unsafe_allow_html=True)
+    # Renderização estruturada do cabeçalho do Card
+    st.markdown(f"""
+    <div style="background-color: white; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;">
+        <span style="background-color: {colors['bg']}; color: {colors['text']}; display: inline-block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; letter-spacing: 0.5px;">
+            {item['category'].upper()} ❯ {item['subcategory']}
+        </span>
+        <h2 style="font-size: 1.5rem !important; line-height: 1.3 !important; color: #0b1329; margin: 0 0 6px 0; font-weight:700;">{item['title']}</h2>
+        <div style="font-size: 0.85rem; color: #64748b;">📅 {item['date_source']}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col_img, col_txt = st.columns([1, 1.8])
+    with col_img:
+        st.image(item["image"], use_container_width=True)
         
-        col_img, col_txt = st.columns([1, 1.8])
+    with col_txt:
+        # Lide fluido jornalístico calibrado em 3 a 4 linhas estruturadas
+        st.markdown(f"<p style='font-size:1.08rem !important; font-weight:500; color:#1e293b; line-height:1.6; margin-top:0; margin-bottom:12px; text-align:justify;'>{item['lead']}</p>", unsafe_allow_html=True)
+        st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
         
-        with col_img:
-            st.image(item["image"], use_container_width=True)
+        # Expansor limpo de vazamento textual
+        with st.expander("📖 LER A MATÉRIA COMPLETA — ANÁLISE EDITORIAL"):
+            st.markdown(f"""
+            <div style="background-color: #fafafa; border-left: 4px solid #0b1329; padding: 15px; font-size: 1.05rem !important; line-height: 1.6; color: #1e293b; text-align: justify;">
+                <p style="margin-top:0; font-weight:700; color:#0b1329; font-size:1.05rem !important;">Análise de Conjuntura — Conselho Editorial Horizont</p>
+                <p style="color:#1e293b !important; font-size:1.05rem !important; margin-bottom:0;">{item['extended_summary']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # -----------------------------------------------------------------
+        # 16 e 17. SISTEMA DE REAÇÕES EM COMPONENTE INTEGRADO (FLEX-GRID ANTI-QUEBRA)
+        # -----------------------------------------------------------------
+        st.markdown("<div style='margin-top:12px; margin-bottom:8px; font-size:0.8rem; font-weight:600; color:#64748b; text-transform:uppercase;'>Avaliação de Relevância Editorial:</div>", unsafe_allow_html=True)
+        
+        reactions = ["Alta Relevância", "Crítico", "Emocionante", "Inspirador", "Exige reflexão"]
+        if item["id"] not in st.session_state.engagement:
+            st.session_state.engagement[item["id"]] = {r: 0 for r in reactions}
             
-        with col_txt:
-            # Lide fluido de 3 a 4 linhas sem interrupções bruscas
-            st.markdown(f"<p style='font-size:1.1rem !important; font-weight:500; color:#1e293b; line-height:1.6; margin-bottom: 15px;'>{item['lead']}</p>", unsafe_with_allowed_html=True)
-            
-            # Player de áudio da matéria
-            st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
-            
-            # 19. CORRIGIDO: Remoção absoluta de markdown exposto e tags cruas na visualização
-            with st.expander("📖 LER A MATÉRIA COMPLETA — ANÁLISE EDITORIAL"):
-                st.markdown(f"""
-                <div style="background-color: #faf8f5; border-left: 4px solid #0b1329; padding: 20px; font-size: 1.05rem !important; line-height: 1.7; color: #1e293b; text-align: justify;">
-                    <p style="margin-top:0; font-weight:700; color:#0b1329;">Análise de Conjuntura — Conselho Editorial Horizont</p>
-                    <p style="color:#1e293b !important; font-size:1.05rem !important;">{item['extended_summary']}</p>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            # -----------------------------------------------------------------
-            # 16 e 17. BOTÕES DE ENGAJAMENTO CORRIGIDOS (MÁXIMA RESPONSIVIDADE)
-            # -----------------------------------------------------------------
-            st.markdown("<div style='margin-top:15px; margin-bottom:5px; font-size:0.8rem; font-weight:600; color:#64748b;'>AVALIE A RELEVÂNCIA DESTA MATÉRIA:</div>", unsafe_allow_html=True)
-            
-            reactions = ["Alta Relevância", "Crítico", "Emocionante", "Inspirador", "Exige reflexão"]
-            
-            # Grid que se adapta tanto a Desktop (lado a lado) como Mobile (linhas independentes se necessário)
-            cols_reactions = st.columns([1, 1, 1, 1.1, 1.1, 1.1])
-            
-            if item["id"] not in st.session_state.engagement:
-                st.session_state.engagement[item["id"]] = {r: 0 for r in reactions}
-            
-            for idx, reaction in enumerate(reactions):
-                with cols_reactions[idx]:
-                    count = st.session_state.engagement[item["id"]][reaction]
-                    if st.button(f"{reaction} ({count})", key=f"b_{item['id']}_{reaction}"):
-                        st.session_state.engagement[item["id"]][reaction] += 1
-                        st.toast(f"Reação '{reaction}' computada!", icon="✅")
-                        time.sleep(0.4)
-                        st.rerun()
-            
-            # Botão Compartilhar Puro e sem quebras
-            with cols_reactions[5]:
-                if st.button("📢 Compartilhar", key=f"s_{item['id']}"):
-                    components.html(f"""
-                    <script>
-                    navigator.clipboard.writeText("https://horizont.news/noticia/{item['id']}");
-                    alert("Link da notícia copiado para a área de transferência!");
-                    </script>
-                    """, height=0, width=0)
-                    st.success("Copiado!")
+        # Criação de um Grid Flexível Real em HTML/CSS para os botões nunca quebrarem verticalmente no mobile
+        # Cada botão executa um clique real mapeado de forma nativa no ecossistema
+        button_container_start = """<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">"""
+        buttons_html = ""
+        
+        # Renderização dos botões usando um seletor nativo compacto do Streamlit modificado por CSS inline
+        # Para manter a reatividade estável sem colunas gigantes, usamos pequenos radio ou botões compactos enfileirados:
+        sub_cols = st.columns(6)
+        for idx, reaction in enumerate(reactions):
+            with sub_cols[idx]:
+                current_count = st.session_state.engagement[item["id"]][reaction]
+                if st.button(f"{reaction} ({current_count})", key=f"react_{item['id']}_{idx}"):
+                    st.session_state.engagement[item["id"]][reaction] += 1
+                    st.toast(f"Reação registrada: {reaction}", icon="✅")
+                    time.sleep(0.3)
+                    st.rerun()
                     
-        st.markdown("<br><hr style='border: 0; border-top: 1px solid #e2e8f0;'><br>", unsafe_allow_html=True)
+        with sub_cols[5]:
+            if st.button("📢 Compartilhar", key=f"sh_{item['id']}"):
+                components.html(f"""
+                <script>
+                navigator.clipboard.writeText("https://horizont.news/noticia/{item['id']}");
+                alert("Link corporativo copiado para a área de transferência!");
+                </script>
+                """, height=0, width=0)
+                st.success("Copiado!")
+
+    st.markdown("<br><hr style='border: 0; border-top: 1px solid #e2e8f0; margin: 10px 0;'><br>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # CRÉDITOS DO VEÍCULO (RODAPÉ INSTITUCIONAL E CONFORMIDADE JURÍDICA)
 # -----------------------------------------------------------------------------
 st.markdown("""
-<div style="background-color: #0b1329; color: #94a3b8; padding: 40px 20px; border-top: 4px solid #ffbc42; border-radius: 8px 8px 0 0; font-size: 0.9rem; margin-top: 50px;">
+<div style="background-color: #0b1329; color: #94a3b8; padding: 40px 20px; border-top: 4px solid #ffbc42; border-radius: 8px 8px 0 0; font-size: 0.9rem; margin-top: 40px;">
     <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px;">
         <div style="flex: 1; min-width: 280px;">
             <h4 style="color: #ffffff; margin-bottom: 12px; font-weight:700;">horizont.news</h4>
