@@ -1,6 +1,5 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import time
 
 # -----------------------------------------------------------------------------
 # Configuração da Página e Reset de Layout
@@ -12,10 +11,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Injeção de CSS Premium Reconstituído
+# Injeção de CSS Premium Reconstituído e Ajustado
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap');
     
     html, body, [data-testid="stAppViewContainer"] {
         background-color: #f8fafc !important;
@@ -63,25 +62,30 @@ st.markdown("""
         padding: 24px;
         margin-bottom: 20px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 100%;
-    }
-    .news-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
     }
 
     /* Destaque Principal */
     .destaque-container {
         background: white;
-        border: 2px solid #0b1329;
+        border: 1px solid #e2e8f0;
         border-radius: 12px;
         padding: 30px;
         margin-bottom: 30px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
     }
 
-    /* Correção de fluxo de botões inline */
+    /* Centralização estrita do título do Expander (Botão de Leitura) */
+    [data-testid="stExpander"] summary {
+        justify-content: center !important;
+        text-align: center !important;
+    }
+    [data-testid="stExpander"] summary span {
+        margin: 0 auto !important;
+        font-weight: 600 !important;
+    }
+
+    /* Ajuste do fluxo de botões de relevância */
     .dynamic-pill-flow div[data-testid="stHorizontalBlockHasColumns"] {
         display: flex !important;
         flex-direction: row !important;
@@ -103,13 +107,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# ESTADO DE SESSÃO E BANCO DE DADOS
+# ESTADO DE SESSÃO E DICIONÁRIO DE ENGAJAMENTO (CHAVES PADRONIZADAS)
 # -----------------------------------------------------------------------------
+reactions_list = ["Alta Relevância", "Crítico", "Emocionante", "Inspirador", "Exige reflexão"]
+reaction_emojis = {
+    "Alta Relevância": "🔥",
+    "Crítico": "⚖️",
+    "Emocionante": "🎭",
+    "Inspirador": "💡",
+    "Exige reflexão": "🧠"
+}
+
 if "engagement" not in st.session_state:
     st.session_state.engagement = {
-        "destaque": {"🔥 Alta Relevância": 87, "⚖️ Crítico": 14, "🎭 Emocionante": 3, "💡 Inspirador": 41, "🧠 Exige reflexão": 29},
-        "news_1": {"🔥 Alta Relevância": 14, "⚖️ Crítico": 3, "🎭 Emocionante": 0, "💡 Inspirador": 8, "🧠 Exige reflexão": 5},
-        "news_2": {"🔥 Alta Relevância": 22, "⚖️ Crítico": 11, "🎭 Emocionante": 2, "💡 Inspirador": 19, "🧠 Exige reflexão": 7}
+        "destaque": {r: 87 if r == "Alta Relevância" else 15 for r in reactions_list},
+        "news_1": {r: 12 if r == "Alta Relevância" else 4 for r in reactions_list},
+        "news_2": {r: 22 if r == "Alta Relevância" else 9 for r in reactions_list}
     }
 
 # -----------------------------------------------------------------------------
@@ -140,7 +153,7 @@ html_ticker_news = """
 components.html(html_ticker_news, height=45)
 
 # -----------------------------------------------------------------------------
-# MATÉRIA EM DESTAQUE (RECONSTITUÍDA)
+# MATÉRIA EM DESTAQUE
 # -----------------------------------------------------------------------------
 st.markdown("## 🌟 MATÉRIA EM DESTAQUE")
 with st.container():
@@ -157,6 +170,7 @@ with st.container():
         """, unsafe_allow_html=True)
         st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3")
         
+        # Expander centralizado via CSS
         with st.expander("📖 LER MATÉRIA COMPLETA"):
             st.markdown("""
             A reestruturação econômica impulsionada pelos novos arranjos produtivos automatizados está redesenhando as cadeias de suprimentos globais. O relatório emitido nesta semana indica que mais de 45% das funções eminentemente repetitivas na indústria manufatureira passaram por algum nível de substituição ou suporte digital direto no último ano.
@@ -166,26 +180,26 @@ with st.container():
             Paralelamente, consórcios internacionais sugerem a criação de fundos de amparo financiados por taxas de produtividade tecnológica para mitigar os impactos sociais de transição nas regiões mais vulneráveis.
             """)
             
-        # Reações Destaque
+        # Reações Destaque Blindadas contra KeyError
         st.markdown('<div class="dynamic-pill-flow">', unsafe_allow_html=True)
-        rc_dest = st.columns(6)
-        dest_reactions = ["🔥 Alta Relevância", "⚖️ Crítico", "🎭 Emocionante", "💡 Inspirador", "🧠 Exige reflexão"]
-        for idx, r_name in enumerate(dest_reactions):
+        rc_dest = st.columns(5)
+        for idx, r_name in enumerate(reactions_list):
             with rc_dest[idx]:
-                if st.button(f"{r_name} ({st.session_state.engagement['destaque'][r_name]})", key=f"btn_dest_{idx}"):
+                emoji = reaction_emojis[r_name]
+                count = st.session_state.engagement["destaque"][r_name]
+                if st.button(f"{emoji} {r_name} ({count})", key=f"btn_dest_{idx}"):
                     st.session_state.engagement["destaque"][r_name] += 1
                     st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# PAINEL COPA DO MUNDO 2026 (RECONSTITUÍDO COM EMBED SEGURO)
+# PAINEL COPA DO MUNDO 2026
 # -----------------------------------------------------------------------------
 st.markdown("### 🏆 COPA DO MUNDO FIFA 2026 — BASTIDORES & CURIOSIDADES")
 with st.container():
     col_vid_left, col_vid_right = st.columns([1.4, 1])
     with col_vid_left:
-        # Uso de Embed estável do YouTube para evitar problemas de restrição de carregamento direto
         components.iframe("https://www.youtube.com/embed/Jm9n_Zcl_iE", height=315)
     with col_vid_right:
         st.markdown(
@@ -200,13 +214,13 @@ with st.container():
 st.markdown("---")
 
 # -----------------------------------------------------------------------------
-# FEED PRINCIPAL EM CARD LAYOUT (DUAS COLUNAS RECONSTITUÍDAS)
+# FEED PRINCIPAL EM DOIS CARDS PARALELOS
 # -----------------------------------------------------------------------------
 st.markdown("### 📰 COBERTURA INTEGRADA GLOBAL")
 
 col_feed_1, col_feed_2 = st.columns(2)
 
-# ---- MATÉRIA 1: TECH & CIÊNCIA ----
+# ---- CARD 1: TECH & CIÊNCIA ----
 with col_feed_1:
     st.markdown('<div class="news-card">', unsafe_allow_html=True)
     st.markdown("""
@@ -217,7 +231,7 @@ with col_feed_1:
     st.image("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80", use_container_width=True)
     st.markdown("<p>A corrida pelo controle dos ecossistemas digitais avançados ganha contornos dramáticos à medida que blocos governamentais passam a exigir infraestruturas proprietárias de dados.</p>", unsafe_allow_html=True)
     
-    st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3") # Player de Áudio dedicado
+    st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
     
     with st.expander("📖 LER MATÉRIA COMPLETA"):
         st.markdown("""
@@ -235,16 +249,17 @@ with col_feed_1:
         
     st.markdown('<div class="dynamic-pill-flow">', unsafe_allow_html=True)
     rc1 = st.columns(5)
-    reactions_list = ["🔥 Alta Relevância", "⚖️ Crítico", "🎭 Emocionante", "💡 Inspirador", "🧠 Exige reflexão"]
     for idx, r_name in enumerate(reactions_list):
         with rc1[idx]:
-            if st.button(f"{r_name} ({st.session_state.engagement['news_1'][r_name]})", key=f"btn_n1_{idx}"):
+            emoji = reaction_emojis[r_name]
+            count = st.session_state.engagement["news_1"][r_name]
+            if st.button(f"{emoji} {r_name} ({count})", key=f"btn_n1_{idx}"):
                 st.session_state.engagement["news_1"][r_name] += 1
                 st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ---- MATÉRIA 2: POLÍTICA ----
+# ---- CARD 2: POLÍTICA ----
 with col_feed_2:
     st.markdown('<div class="news-card">', unsafe_allow_html=True)
     st.markdown("""
@@ -255,7 +270,7 @@ with col_feed_2:
     st.image("https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=800&q=80", use_container_width=True)
     st.markdown("<p>Nos bastidores das coalizões partidárias, o nome do empresário surge como um forte elemento agregador para o equilíbrio de palanques e atração do setor de comércio.</p>", unsafe_allow_html=True)
     
-    st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3") # Player de Áudio dedicado
+    st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3")
     
     with st.expander("📖 LER MATÉRIA COMPLETA"):
         st.markdown("""
@@ -275,14 +290,16 @@ with col_feed_2:
     rc2 = st.columns(5)
     for idx, r_name in enumerate(reactions_list):
         with rc2[idx]:
-            if st.button(f"{r_name} ({st.session_state.engagement['news_2'][r_name]})", key=f"btn_n2_{idx}"):
+            emoji = reaction_emojis[r_name]
+            count = st.session_state.engagement["news_2"][r_name]
+            if st.button(f"{emoji} {r_name} ({count})", key=f"btn_n2_{idx}"):
                 st.session_state.engagement["news_2"][r_name] += 1
                 st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# RODAPÉ DETALHADO COM CRÉDITOS AMPLIADOS
+# RODAPÉ DETALHADO
 # -----------------------------------------------------------------------------
 st.markdown("""
 <div style="background-color: #0b1329; color: #94a3b8; padding: 40px 20px; border-top: 4px solid #ffbc42; border-radius: 8px; font-size: 0.9rem; margin-top: 40px;">
@@ -290,9 +307,6 @@ st.markdown("""
         <p style="font-weight: 700; color: #ffffff; margin-bottom: 5px;">© 2026 horizont.news — Portal Independente</p>
         <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 15px;">
             Desenvolvido em conformidade estrita com as diretrizes do Manual de Redação e Princípios Editoriais de Universalidade. "Informação sem Fronteiras" é uma marca registrada sob licença de distribuição jornalística aberta.
-        </p>
-        <p style="color: #475569; font-size: 0.75rem;">
-            Créditos Adicionais: Conteúdos de vídeo providos via API Pública do YouTube. Áudios gerados sinteticamente para acessibilidade de leitura por sistemas text-to-speech. Coberturas fotográficas licenciadas via Unsplash Creative Commons.
         </p>
     </div>
 </div>
