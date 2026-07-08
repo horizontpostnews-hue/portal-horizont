@@ -12,11 +12,11 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Injecting CSS for Premium Universal Theme (#0b1329, #00f5d4, #ffbc42)
-# Resolves accessibility text contrast, mobile padding, and component sizing.
+# Injeção de CSS para o Tema Premium Universal (#0b1329, #00f5d4, #ffbc42)
+# Correção do argumento de renderização HTML e calibração de contrastes
 st.markdown("""
 <style>
-    /* Reset and Global Styles */
+    /* Reset e Estilos Globais */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
     html, body, [data-testid="stAppViewContainer"] {
@@ -25,7 +25,7 @@ st.markdown("""
         color: #1e293b !important;
     }
     
-    /* Accessibility & Text Hierarchy */
+    /* Acessibilidade e Hierarquia de Textos */
     h1, h2, h3 {
         color: #0b1329 !important;
         font-weight: 700 !important;
@@ -33,10 +33,10 @@ st.markdown("""
     p {
         font-size: 1.05rem !important;
         line-height: 1.6 !important;
-        color: #334155 !important;
+        color: #1e293b !important; /* Contraste aumentado para o público sênior */
     }
     
-    /* Custom Header Bar (Premium Universal) */
+    /* Barra de Identidade Visual Premium */
     .premium-header {
         background: linear-gradient(135deg, #0b1329 0%, #1e293b 100%);
         padding: 30px 20px;
@@ -77,33 +77,20 @@ st.markdown("""
         margin-top: 5px !important;
     }
 
-    /* Dynamic Tags styling */
-    .news-tag {
-        display: inline-block;
-        font-size: 0.75rem !important;
-        font-weight: 700 !important;
-        text-transform: uppercase;
-        padding: 4px 10px;
-        border-radius: 4px;
-        margin-bottom: 10px;
-        letter-spacing: 0.5px;
-    }
-    
-    /* Fix Streamlit Padding Issues */
+    /* Espaçamentos Gerais do Streamlit */
     .block-container {
         padding-top: 2rem !important;
         padding-bottom: 2rem !important;
     }
     
-    /* Animation Keyframes */
     @keyframes pulse {
         0%, 100% { transform: scale(1); opacity: 0.9; }
         50% { transform: scale(1.05); opacity: 1; }
     }
 </style>
-""", unsafe_with_allowed_html=True)
+""", unsafe_allow_html=True) # CORRIGIDO: Argumento oficial aceito pelo Streamlit
 
-# Initialize Session State for Engagement Tracker
+# Inicialização do Estado de Sessão para Reações de Engajamento
 if "engagement" not in st.session_state:
     st.session_state.engagement = {}
 
@@ -118,12 +105,11 @@ st.markdown("""
     </div>
     <div class="premium-tagline">Conectando Gerações — Informação Sem Fronteiras</div>
 </div>
-""", unsafe_with_allowed_html=True)
+""", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 2. BANNER INSTITUCIONAL DINÂMICO (FLUXO MÉDIO EM CSS)
 # -----------------------------------------------------------------------------
-# Substitui o banner estático por um fluxo contínuo e legível de leitura agradável.
 html_ticker_institutional = """
 <div style="background-color: #00f5d4; color: #0b1329; padding: 10px 0; overflow: hidden; white-space: nowrap; font-weight: 700; font-size: 0.95rem; box-shadow: inset 0 -2px 5px rgba(0,0,0,0.1); border-bottom: 2px solid #0b1329;">
     <div style="display: inline-block; padding-left: 100%; animation: marquee-inst 28s linear infinite;">
@@ -140,9 +126,8 @@ html_ticker_institutional = """
 components.html(html_ticker_institutional, height=42)
 
 # -----------------------------------------------------------------------------
-# 3. CARROSSEL DINÂMICO DE ÚLTIMAS NOTÍCIAS (FLUXO MODERADO COM FONTE)
+# 3. CARROSSEL DINÂMICO DE ÚLTIMAS NOTÍCIAS (FLUXO MODERADO)
 # -----------------------------------------------------------------------------
-# Removida numeração, adicionado o fundo em cor destacada e velocidade otimizada de 35s.
 html_ticker_news = """
 <div style="display: flex; background-color: #0b1329; border-radius: 4px; overflow: hidden; margin-top: 15px; margin-bottom: 20px; align-items: center;">
     <div style="background-color: #ffbc42; color: #0b1329; padding: 10px 15px; font-weight: 800; font-size: 0.85rem; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px;">
@@ -168,13 +153,12 @@ html_ticker_news = """
 components.html(html_ticker_news, height=45)
 
 # -----------------------------------------------------------------------------
-# 11. COPA DO MUNDO 2026 — COMPONENTE DE VÍDEO EXCLUSIVO E CURTO (ATÉ 1.5 MIN)
+# 11. SESSÃO COPA DO MUNDO 2026 (VÍDEO PÚBLICO INTEGRADO)
 # -----------------------------------------------------------------------------
 st.markdown("### 🏆 COPA DO MUNDO FIFA 2026 — BASTIDORES & CURIOSIDADES")
 with st.container():
     col_vid_left, col_vid_right = st.columns([1.2, 1])
     with col_vid_left:
-        # Substituído por vídeo real, livre e focado em estádios/cidades da Copa 2026 (Até 1.5 min)
         st.video("https://www.youtube.com/watch?v=Jm9n_Zcl_iE", start_time=0)
     with col_vid_right:
         st.markdown(
@@ -190,9 +174,8 @@ with st.container():
 st.markdown("---")
 
 # -----------------------------------------------------------------------------
-# 18. REAJUSTE DO SISTEMA DE CATEGORIZAÇÃO COM FILTRO DINÂMICO CONDICIONAL
+# 18. ÁRVORE DE CATEGORIZAÇÃO E FILTRAGEM DINÂMICA CONDICIONAL
 # -----------------------------------------------------------------------------
-# Estrutura lógica de dicionário mapeando Categoria -> Subcategorias
 categories_tree = {
     "Selecione uma Categoria": [],
     "Política": ["Nacional", "Internacional/Geopolítica", "Eleições"],
@@ -215,7 +198,7 @@ if main_choice != "Selecione uma Categoria":
     with col_f2:
         sub_choice = st.selectbox("❯ Selecione a Subcategoria Específica:", categories_tree[main_choice])
 
-# Cores de tag padronizadas por Categoria
+# Paleta Semântica para os Assuntos
 tag_colors = {
     "Política": {"bg": "#e0f2fe", "text": "#0369a1"},
     "Economia": {"bg": "#dcfce7", "text": "#15803d"},
@@ -227,7 +210,9 @@ tag_colors = {
     "Viver Bem": {"bg": "#ccfbf1", "text": "#0f766e"}
 }
 
-# Base de Dados das Notícias Simuladas com Lides de 3 a 4 linhas perfeitas e Resumos Analíticos
+# -----------------------------------------------------------------------------
+# BASE DE DADOS INTEGRADA — LIDES INTRODUTÓRIOS DE 3 A 4 LINHAS (SEM CORTES)
+# -----------------------------------------------------------------------------
 news_database = [
     {
         "id": "news_1",
@@ -261,7 +246,7 @@ news_database = [
     }
 ]
 
-# Filtragem Inteligente dos Dados
+# Lógica de Filtragem de Notícias
 filtered_news = []
 for n in news_database:
     if main_choice != "Selecione uma Categoria":
@@ -272,31 +257,28 @@ for n in news_database:
             continue
     filtered_news.append(n)
 
+if not filtered_news:
+    st.info("Nenhuma notícia encontrada para este filtro específico. Exibindo o feed geral:")
+    filtered_news = news_database
+
 # -----------------------------------------------------------------------------
-# RENDERIZAÇÃO DOS CARDS DE NOTÍCIA COM LAYOUT SEGURO E RESPONSIVO
+# RENDERIZAÇÃO RESPONSIVA DO CORPO DE MATÉRIAS
 # -----------------------------------------------------------------------------
 st.markdown("### 📰 COBERTURA INTEGRADA GLOBAL")
 
-if not filtered_news:
-    st.info("Nenhuma notícia encontrada para este filtro específico. Exibindo as mais recentes abaixo:")
-    filtered_news = news_database
-
 for item in filtered_news:
-    # Cores dinâmicas baseadas na categoria
     colors = tag_colors.get(item["category"], {"bg": "#e2e8f0", "text": "#475569"})
     
     with st.container():
-        # HTML customizado integrado por dentro do Streamlit para evitar quebras de layout mobile
         st.markdown(f"""
         <div style="background-color: white; border-radius: 8px; padding: 24px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: 1px solid #e2e8f0;">
-            <!-- Tag Hierárquica Estruturada Dinamicamente (Item 18) -->
             <span style="background-color: {colors['bg']}; color: {colors['text']}; display: inline-block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; margin-bottom: 12px; letter-spacing: 0.5px;">
                 {item['category'].upper()} ❯ {item['subcategory']}
             </span>
             <h2 style="font-size: 1.6rem !important; line-height: 1.3 !important; color: #0b1329; margin-bottom: 8px; font-weight:700;">{item['title']}</h2>
             <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">📅 {item['date_source']}</div>
         </div>
-        """, unsafe_with_allowed_html=True)
+        """, unsafe_allow_html=True)
         
         col_img, col_txt = st.columns([1, 1.8])
         
@@ -304,53 +286,54 @@ for item in filtered_news:
             st.image(item["image"], use_container_width=True)
             
         with col_txt:
-            # Lide Perfeito: Corrigido o corte brusco para parágrafos elegantes de 3 a 4 linhas
-            st.markdown(f"<p style='font-size:1.1rem !important; font-weight:500; color:#1e293b; line-height:1.6;'>{item['lead']}</p>", unsafe_with_allowed_html=True)
+            # Lide fluido, completo e sem interrupções abruptas (Ajuste de 3 a 4 linhas)
+            st.markdown(f"<p style='font-size:1.1rem !important; font-weight:500; color:#1e293b; line-height:1.6; margin-bottom: 15px;'>{item['lead']}</p>", unsafe_with_allowed_html=True)
             
-            # Reprodutor de áudio acessível
+            # Player de áudio da matéria
             st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
             
-            # Expansor Editorial: Resumo Estendido Autoral Tratado Esteticamente (Item 19)
-            with st.expander("📖 LEITURA COMPLETA — ANÁLISE EDITORIAL"):
+            # 19. Resumo Estendido Autoral com tratamento estético e textual refinado
+            with st.expander("📖 LER A MATÉRIA COMPLETA — ANÁLISE EDITORIAL"):
                 st.markdown(f"""
-                <div style="background-color: #fafafa; border-left: 4px solid #0b1329; padding: 18px; font-size: 1.05rem !important; line-height: 1.7; color: #334155; text-align: justify;">
-                    {item['extended_summary'].replace('\n\n', '<br><br>')}
+                <div style="background-color: #fafafa; border-left: 4px solid #0b1329; padding: 20px; font-size: 1.05rem !important; line-height: 1.7; color: #1e293b; text-align: justify; white-space: pre-line;">
+                    <strong>Análise de Conjuntura — Conselho Editorial Horizont</strong>
+                    
+                    {item['extended_summary']}
                 </div>
-                """, unsafe_with_allowed_html=True)
+                """, unsafe_allow_html=True)
             
             # -----------------------------------------------------------------
             # 16 e 17. BOTÕES DE ENGAJAMENTO E COMPARTILHAR TOTALMENTE FUNCIONAIS
             # -----------------------------------------------------------------
-            st.markdown("<div style='margin-top:15px; margin-bottom:5px; font-size:0.8rem; font-weight:600; color:#64748b;'>AVALIE A RELEVÂNCIA DESTA MATÉRIA:</div>", unsafe_with_allowed_html=True)
+            st.markdown("<div style='margin-top:15px; margin-bottom:5px; font-size:0.8rem; font-weight:600; color:#64748b;'>AVALIE A RELEVÂNCIA DESTA MATÉRIA:</div>", unsafe_allow_html=True)
             
             reactions = ["Alta Relevância", "Crítico", "Emocionante", "Inspirador", "Exige reflexão"]
             cols_reactions = st.columns([1, 1, 1, 1.2, 1.2, 1.2])
             
-            # Inicialização de chaves de estado de engajamento específicas desta notícia
             if item["id"] not in st.session_state.engagement:
                 st.session_state.engagement[item["id"]] = {r: 0 for r in reactions}
             
-            # Renderização nativa dos botões de reação prevenindo quebras de linha em celulares
             for idx, reaction in enumerate(reactions):
                 with cols_reactions[idx]:
                     count = st.session_state.engagement[item["id"]][reaction]
                     if st.button(f"{reaction} ({count})", key=f"btn_{item['id']}_{reaction}"):
                         st.session_state.engagement[item["id"]][reaction] += 1
-                        st.toast(f"Reação '{reaction}' computada com sucesso!", icon="✅")
-                        time.sleep(0.5)
+                        st.toast(f"Reação '{reaction}' registrada!", icon="✅")
+                        time.sleep(0.4)
                         st.rerun()
             
-            # Botão Compartilhar Funcional nativo com cópia em tempo real via JS
+            # Botão Compartilhar com Chamada JavaScript Real
             with cols_reactions[5]:
                 if st.button("📢 Compartilhar", key=f"share_{item['id']}"):
                     components.html(f"""
                     <script>
                     navigator.clipboard.writeText("https://horizont.news/noticia/{item['id']}");
-                    alert("Link da notícia copiado para a área de transferência!");
+                    alert("Link da notícia copiado para a área de transferência com sucesso!");
                     </script>
                     """, height=0, width=0)
                     st.success("Link copiado!")
-        st.markdown("<br><hr style='border: 0; border-top: 1px solid #e2e8f0;'><br>", unsafe_with_allowed_html=True)
+                    
+        st.markdown("<br><hr style='border: 0; border-top: 1px solid #e2e8f0;'><br>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # CRÉDITOS DO VEÍCULO (RODAPÉ INSTITUCIONAL E CONFORMIDADE JURÍDICA)
@@ -376,4 +359,4 @@ st.markdown("""
         © 2026 horizont.news — Desenvolvido em conformidade com as diretrizes editoriais Premium Universal. Todos os direitos reservados.
     </div>
 </div>
-""", unsafe_with_allowed_html=True)
+""", unsafe_allow_html=True)
